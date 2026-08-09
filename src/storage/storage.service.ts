@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   PutObjectCommand,
@@ -7,44 +11,89 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
 
+const REQUIRED_VARS = [
+  'AWS_REGION',
+  'AWS_ACCESS_KEY_ID',
+  'AWS_SECRET_ACCESS_KEY',
+  'AWS_S3_BUCKET',
+] as const;
+
 @Injectable()
 export class StorageService {
-  private readonly s3: S3Client;
+  private readonly logger = new Logger(StorageService.name);
+  private client: S3Client | null = null;
 
   constructor(private readonly configService: ConfigService) {
-    this.s3 = new S3Client({
-      region: this.configService.get<string>('AWS_REGION'),
-      credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID')!,
-        secretAccessKey: this.configService.get<string>(
-          'AWS_SECRET_ACCESS_KEY',
-        )!,
-      },
-    });
+    const missing = this.missingVars();
+
+    if (missing.length) {
+      this.logger.warn(
+        `File storage disabled — missing ${missing.join(', ')}. ` +
+          'Upload endpoints will return 503; the rest of the API is unaffected.',
+      );
+    }
   }
 
-async createUploadUrl(
-  fileName: string,
-  contentType: string,
-  folder: 'courses' | 'products' | 'uploads',
-) {
-  const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
+  private missingVars(): string[] {
+    return REQUIRED_VARS.filter(
+      (name) => !this.configService.get<string>(name),
+    );
+  }
 
-  const key = `${folder}/${randomUUID()}-${fileName}`;
+  /**
+   * Built on first use, not in the constructor. The S3 SDK throws
+   * "Region is missing" the moment a client is constructed without config,
+   * which previously failed Nest's DI and took down the whole application
+   * at boot rather than just the upload endpoints.
+   */
+  private getClient(): S3Client {
+    const missing = this.missingVars();
 
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    ContentType: contentType,
-  });
+    if (missing.length) {
+      throw new ServiceUnavailableException(
+        `File storage is not configured (missing ${missing.join(', ')})`,
+      );
+    }
 
-  const uploadUrl = await getSignedUrl(this.s3, command, {
-    expiresIn: 300,
-  });
+    if (!this.client) {
+      this.client = new S3Client({
+        region: this.configService.get<string>('AWS_REGION'),
+        credentials: {
+          accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID')!,
+          secretAccessKey: this.configService.get<string>(
+            'AWS_SECRET_ACCESS_KEY',
+          )!,
+        },
+      });
+    }
 
-  return {
-    uploadUrl,
-    key,
-  };
-}
+    return this.client;
+  }
+
+  async createUploadUrl(
+    fileName: string,
+    contentType: string,
+    folder: 'courses' | 'products' | 'uploads',
+  ) {
+    const s3 = this.getClient();
+
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
+
+    const key = `${folder}/${randomUUID()}-${fileName}`;
+
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ContentType: contentType,
+    });
+
+    const uploadUrl = await getSignedUrl(s3, command, {
+      expiresIn: 300,
+    });
+
+    return {
+      uploadUrl,
+      key,
+    };
+  }
 }
