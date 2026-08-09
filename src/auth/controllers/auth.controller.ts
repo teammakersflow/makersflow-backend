@@ -73,9 +73,4 @@ export class AuthController {
   ) {
     return this.authService.logout(user.id);
   }
-
-  @Post('dev-login')
-  @ApiOperation({
-    summary: 'Development login (Remove before production)',
-  })
 }
