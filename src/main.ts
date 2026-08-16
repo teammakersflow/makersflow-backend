@@ -23,6 +23,7 @@ async function bootstrap() {
     'http://localhost:5173',
     'http://localhost:8080',
     'https://makerflow-frontend-bduecd-1a49ca-187-127-138-223.sslip.io',
+    'https://team.makersflow.in',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
