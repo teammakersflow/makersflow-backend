@@ -74,4 +74,24 @@ export class CreateProductDto {
   @IsOptional()
   @IsNumber()
   course_id?: number;
+
+  // Product-specific fields
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  gst_rate?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  stock_quantity?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  weight_kg?: number;
+
+  @IsOptional()
+  @IsString()
+  hsn_code?: string;
 }
