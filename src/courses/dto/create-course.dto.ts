@@ -38,6 +38,11 @@ export class CreateCourseDto {
   price?: number;
 
   @IsOptional()
+  @IsNumber()
+  @Min(0)
+  gst_rate?: number;
+
+  @IsOptional()
   @IsBoolean()
   is_free?: boolean;
 
