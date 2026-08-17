@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
@@ -7,11 +11,18 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  create(createReviewDto: CreateReviewDto) {
-    return this.prisma.reviews.create({
-      data: createReviewDto,
-    });
-  }
+create(
+  createReviewDto: CreateReviewDto,
+  userId: string,
+) {
+  return this.prisma.reviews.create({
+    data: {
+      ...createReviewDto,
+      user_id: userId,
+      status: 'pending',
+    },
+  });
+}
 
   findAll() {
     return this.prisma.reviews.findMany();
@@ -23,12 +34,28 @@ export class ReviewsService {
     });
   }
 
-  update(id: string, updateReviewDto: UpdateReviewDto) {
-    return this.prisma.reviews.update({
-      where: { id },
-      data: updateReviewDto,
-    });
+async update(
+  id: string,
+  updateReviewDto: UpdateReviewDto,
+  userId: string,
+) {
+  const review = await this.prisma.reviews.findUnique({
+    where: { id },
+  });
+
+  if (!review) {
+    throw new Error('Review not found');
   }
+
+  if (review.user_id !== userId) {
+    throw new Error('You can only update your own review');
+  }
+
+  return this.prisma.reviews.update({
+    where: { id },
+    data: updateReviewDto,
+  });
+}
 
   remove(id: string) {
     return this.prisma.reviews.delete({

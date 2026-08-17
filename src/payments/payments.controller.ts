@@ -6,18 +6,30 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
+
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+
 @Controller('payments')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+  ) {}
 
   @Post()
   create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentsService.create(createPaymentDto);
+    return this.paymentsService.create(
+      createPaymentDto,
+    );
   }
 
   @Get()
@@ -35,7 +47,10 @@ export class PaymentsController {
     @Param('id') id: string,
     @Body() updatePaymentDto: UpdatePaymentDto,
   ) {
-    return this.paymentsService.update(id, updatePaymentDto);
+    return this.paymentsService.update(
+      id,
+      updatePaymentDto,
+    );
   }
 
   @Delete(':id')

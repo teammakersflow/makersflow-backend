@@ -1,5 +1,4 @@
 import {
-  IsUUID,
   IsNumber,
   IsString,
   IsOptional,
@@ -7,9 +6,6 @@ import {
 } from 'class-validator';
 
 export class CreateReviewDto {
-  @IsUUID()
-  user_id!: string;
-
   @IsNumber()
   course_id!: number;
 
@@ -19,12 +15,4 @@ export class CreateReviewDto {
   @IsOptional()
   @IsString()
   comment?: string;
-
-  @IsOptional()
-  @IsString()
-  status?: string;
-
-  @IsOptional()
-  @IsString()
-  approved_comment?: string;
 }
