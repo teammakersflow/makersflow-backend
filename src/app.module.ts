@@ -22,6 +22,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { StorageModule } from './storage/storage.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { StorageModule } from './storage/storage.module';
     NotificationsModule,
     AnalyticsModule,
     StorageModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [
