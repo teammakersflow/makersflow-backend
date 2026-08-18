@@ -16,73 +16,56 @@ export class EnrollmentsService {
     });
   }
 
-  async findAll(includeUser = false, includeCourse = false) {
-    if (!includeUser && !includeCourse) {
-      return this.prisma.enrollments.findMany();
+  async findAll(
+    includeUser = false,
+    includeCourse = false,
+  ) {
+    const include: any = {};
+
+    if (includeUser) {
+      include.users = {
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+        },
+      };
     }
 
-    const enrollments = await this.prisma.enrollments.findMany({
-      include: {
-        users: includeUser
-          ? {
-              select: {
-                id: true,
-                email: true,
-                raw_user_meta_data: true,
-              },
-            }
-          : false,
-
-        courses: includeCourse
-          ? {
-              select: {
-                id: true,
-                title: true,
-                price: true,
-                is_free: true,
-              },
-            }
-          : false,
-      },
-    });
-
-    return enrollments.map((enrollment) => {
-      const { users, courses, ...enrollmentData } = enrollment;
-
-      const result: any = {
-        ...enrollmentData,
+    if (includeCourse) {
+      include.courses = {
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          is_free: true,
+        },
       };
+    }
 
-      if (includeUser && users) {
-        const metadata = users.raw_user_meta_data;
+const enrollments: any[] =
+  await this.prisma.enrollments.findMany({
+    include,
+  });
 
-        let fullName: string | null = null;
+    return enrollments.map((enrollment: any) => {
+      const {
+        users,
+        courses,
+        ...enrollmentData
+      } = enrollment;
 
-        if (
-          metadata &&
-          typeof metadata === 'object' &&
-          !Array.isArray(metadata) &&
-          'full_name' in metadata
-        ) {
-          const value = (metadata as Record<string, unknown>).full_name;
+      return {
+        ...enrollmentData,
 
-          if (typeof value === 'string') {
-            fullName = value;
-          }
-        }
+        ...(includeUser && {
+          user: users,
+        }),
 
-        result.user = {
-          id: users.id,
-          email: users.email,
-          full_name: fullName,
-        };
-      }
-
-      if (includeCourse && courses) {
-        result.course = courses;
-      }
-
-      return result;
+        ...(includeCourse && {
+          course: courses,
+        }),
+      };
     });
   }
 
@@ -92,7 +75,10 @@ export class EnrollmentsService {
     });
   }
 
-  update(id: string, updateEnrollmentDto: UpdateEnrollmentDto) {
+  update(
+    id: string,
+    updateEnrollmentDto: UpdateEnrollmentDto,
+  ) {
     return this.prisma.enrollments.update({
       where: { id },
       data: updateEnrollmentDto,

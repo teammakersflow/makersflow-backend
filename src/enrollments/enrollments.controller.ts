@@ -37,21 +37,21 @@ export class EnrollmentsController {
     );
   }
 
-  @Get()
-  findAll(@Query('include') include?: string) {
-    const includes =
-      include
-        ?.split(',')
-        .map((item) => item.trim()) ?? [];
+@Get()
+findAll(@Query('include') include?: string) {
+  const includes =
+    include
+      ?.split(',')
+      .map((item) => item.trim()) ?? [];
 
-    const includeUser = includes.includes('user');
-    const includeCourse = includes.includes('course');
+  const includeUser = includes.includes('user');
+  const includeCourse = includes.includes('course');
 
-    return this.enrollmentsService.findAll(
-      includeUser,
-      includeCourse,
-    );
-  }
+  return this.enrollmentsService.findAll(
+    includeUser,
+    includeCourse,
+  );
+}
 
   @Get(':id')
   findOne(@Param('id') id: string) {

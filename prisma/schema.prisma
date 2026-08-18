@@ -450,7 +450,6 @@ model auth_users {
   certificates                certificates[]
   coupon_usage                coupon_usage[]
   course_purchases            course_purchases[]
-  enrollments                 enrollments[]
   feedback                    feedback[]
   invoices                    invoices[]
   notifications               notifications[]
@@ -691,16 +690,17 @@ model courses {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model enrollments {
-  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id           String     @db.Uuid
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String       @db.Uuid
   course_id         BigInt
-  enrolled_at       DateTime?  @default(now()) @db.Timestamptz(6)
-  completed_at      DateTime?  @db.Timestamptz(6)
-  payment_status    String     @default("pending")
+  enrolled_at       DateTime?    @default(now()) @db.Timestamptz(6)
+  completed_at      DateTime?    @db.Timestamptz(6)
+  payment_status    String       @default("pending")
   razorpay_order_id String?
-  expires_at        DateTime?  @db.Timestamptz(6)
-  courses           courses    @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users             auth_users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  expires_at        DateTime?    @db.Timestamptz(6)
+
+  courses           courses      @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users             public_users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([user_id, course_id])
   @@unique([user_id, course_id], map: "uq_enrollments_user_course")
@@ -1302,7 +1302,7 @@ model public_users {
   full_name             String?
   grade                 String?
   school                String?
-  avatar_url            String?
+  avatar_url             String?
   created_at            DateTime?  @default(now()) @db.Timestamptz(6)
   hashed_refresh_token  String?
   role                  String     @default("student")
@@ -1310,9 +1310,11 @@ model public_users {
   onboarding_completed  Boolean    @default(false)
   is_banned             Boolean    @default(false)
   updated_at            DateTime?  @default(now()) @db.Timestamptz(6)
+
   orders                orders[]
   payments              payments[]
   profiles              profiles?
+  enrollments           enrollments[]
 
   @@map("users")
   @@schema("public")
