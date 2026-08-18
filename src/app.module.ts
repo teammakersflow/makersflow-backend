@@ -27,6 +27,7 @@ import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { QuizQuestionsModule } from './quiz-questions/quiz-questions.module';
 import { LessonResourcesModule } from './lesson-resources/lesson-resources.module';
 import { CoursePurchasesModule } from './course-purchases/course-purchases.module';
+import { LessonProgressModule } from './lesson-progress/lesson-progress.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { CoursePurchasesModule } from './course-purchases/course-purchases.modul
     QuizQuestionsModule,
     LessonResourcesModule,
     CoursePurchasesModule,
+    LessonProgressModule,
   ],
   controllers: [AppController],
   providers: [
