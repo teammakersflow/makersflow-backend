@@ -457,7 +457,6 @@ model auth_users {
   product_reviews             product_reviews[]
   push_tokens                 push_tokens[]
   quiz_attempts               quiz_attempts[]
-  reviews                     reviews[]
   shipping_addresses          shipping_addresses[]
   streaks                     streaks?
   user_badges                 user_badges[]
@@ -1230,8 +1229,7 @@ model reviews {
   approved_comment String?
   review_replies   review_replies[]
   courses          courses          @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  users            auth_users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
+  users            public_users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   @@unique([user_id, course_id], map: "reviews_user_course_unique")
   @@unique([user_id, course_id], map: "uq_reviews_user_course")
   @@index([course_id, status, created_at(sort: Desc)], map: "idx_reviews_course_status")
@@ -1315,6 +1313,7 @@ model public_users {
   payments              payments[]
   profiles              profiles?
   enrollments           enrollments[]
+  reviews               reviews[]
 
   @@map("users")
   @@schema("public")

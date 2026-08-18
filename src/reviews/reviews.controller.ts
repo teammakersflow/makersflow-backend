@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { ReviewsService } from './reviews.service';
@@ -26,21 +27,27 @@ export class ReviewsController {
     private readonly reviewsService: ReviewsService,
   ) {}
 
-@Post()
-@UseGuards(JwtAuthGuard)
-create(
-  @Body() createReviewDto: CreateReviewDto,
-  @CurrentUser() user: AuthenticatedUser,
-) {
-  return this.reviewsService.create(
-    createReviewDto,
-    user.id,
-  );
-}
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  create(
+    @Body() createReviewDto: CreateReviewDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reviewsService.create(
+      createReviewDto,
+      user.id,
+    );
+  }
 
   @Get()
-  findAll() {
-    return this.reviewsService.findAll();
+  findAll(@Query('include') include?: string) {
+    const includes =
+      include
+        ?.split(',')
+        .map((item) => item.trim())
+        .filter(Boolean) ?? [];
+
+    return this.reviewsService.findAll(includes);
   }
 
   @Get(':id')
@@ -48,19 +55,19 @@ create(
     return this.reviewsService.findOne(id);
   }
 
-@Patch(':id')
-@UseGuards(JwtAuthGuard)
-update(
-  @Param('id') id: string,
-  @Body() updateReviewDto: UpdateReviewDto,
-  @CurrentUser() user: AuthenticatedUser,
-) {
-  return this.reviewsService.update(
-    id,
-    updateReviewDto,
-    user.id,
-  );
-}
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updateReviewDto: UpdateReviewDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reviewsService.update(
+      id,
+      updateReviewDto,
+      user.id,
+    );
+  }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
