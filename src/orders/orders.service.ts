@@ -6,6 +6,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 
 import { UpdateOrderDto } from './dto/update-order.dto';
 
+import { BulkUpdateOrdersDto } from './dto/bulk-update-orders.dto';
+
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
@@ -51,6 +53,37 @@ async findAll(includeUser = false) {
       data: updateOrderDto,
     });
   }
+
+  async bulkUpdate(bulkUpdateOrdersDto: BulkUpdateOrdersDto) {
+  const { ids, data } = bulkUpdateOrdersDto;
+
+  const succeeded: string[] = [];
+  const failed: { id: string; reason: string }[] = [];
+
+  for (const id of ids) {
+    try {
+      await this.prisma.orders.update({
+        where: { id },
+        data,
+      });
+
+      succeeded.push(id);
+    } catch (error) {
+      failed.push({
+        id,
+        reason:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update order',
+      });
+    }
+  }
+
+  return {
+    succeeded,
+    failed,
+  };
+}
 
   remove(id: string) {
     return this.prisma.orders.delete({

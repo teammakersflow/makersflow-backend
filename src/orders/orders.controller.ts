@@ -13,6 +13,7 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { BulkUpdateOrdersDto } from './dto/bulk-update-orders.dto';
 
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -46,6 +47,13 @@ findAll(@Query('include') include?: string) {
   findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
+
+  @Patch('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  bulkUpdate(@Body() bulkUpdateOrdersDto: BulkUpdateOrdersDto) {
+    return this.ordersService.bulkUpdate(bulkUpdateOrdersDto);
+}
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
