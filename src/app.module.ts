@@ -26,6 +26,7 @@ import { SettingsModule } from './settings/settings.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { QuizQuestionsModule } from './quiz-questions/quiz-questions.module';
 import { LessonResourcesModule } from './lesson-resources/lesson-resources.module';
+import { CoursePurchasesModule } from './course-purchases/course-purchases.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { LessonResourcesModule } from './lesson-resources/lesson-resources.modul
     PromoCodesModule,
     QuizQuestionsModule,
     LessonResourcesModule,
+    CoursePurchasesModule,
   ],
   controllers: [AppController],
   providers: [
