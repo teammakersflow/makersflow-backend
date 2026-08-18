@@ -12,6 +12,7 @@ import {
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { BulkUpdateCoursesDto } from './dto/bulk-update-courses.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -37,6 +38,16 @@ export class CoursesController {
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(BigInt(id));
   }
+
+  @Patch('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  bulkUpdate(@Body() bulkUpdateCoursesDto: BulkUpdateCoursesDto) {
+  return this.coursesService.bulkUpdate(
+    bulkUpdateCoursesDto.ids,
+    bulkUpdateCoursesDto.data,
+  );
+}
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
