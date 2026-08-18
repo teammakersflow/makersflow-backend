@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { BulkDeletePromoCodesDto } from './dto/bulk-delete-promo-codes.dto';
 import { PromoCodesService } from './promo-codes.service';
 import { CreatePromoCodeDto } from './dto/create-promo-code.dto';
 import { UpdatePromoCodeDto } from './dto/update-promo-code.dto';
@@ -27,6 +28,12 @@ export class PromoCodesController {
     return this.promoCodesService.update(id, updatePromoCodeDto);
   }
 
+  @Delete('bulk')
+  bulkDelete(@Body() bulkDeletePromoCodesDto: BulkDeletePromoCodesDto) {
+  return this.promoCodesService.bulkDelete(
+    bulkDeletePromoCodesDto.ids,
+  );
+  }
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.promoCodesService.remove(id);

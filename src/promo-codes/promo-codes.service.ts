@@ -35,4 +35,29 @@ export class PromoCodesService {
       where: { id },
     });
   }
+
+  async bulkDelete(ids: string[]) {
+  const succeeded: string[] = [];
+  const failed: { id: string; reason: string }[] = [];
+
+  for (const id of ids) {
+    try {
+      await this.prisma.promo_codes.delete({
+        where: { id },
+      });
+
+      succeeded.push(id);
+    } catch (error) {
+      failed.push({
+        id,
+        reason: 'Promo code not found or delete failed',
+      });
+    }
+  }
+
+  return {
+    succeeded,
+    failed,
+  };
+}
 }
