@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CreateOrderDto } from './dto/create-order.dto';
+
 import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Injectable()
@@ -13,9 +16,28 @@ export class OrdersService {
     });
   }
 
-  findAll() {
+async findAll(includeUser = false) {
+  if (!includeUser) {
     return this.prisma.orders.findMany();
   }
+
+  const orders = await this.prisma.orders.findMany({
+    include: {
+      users: {
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+        },
+      },
+    },
+  });
+
+  return orders.map(({ users, ...order }) => ({
+    ...order,
+    user: users,
+  }));
+}
 
   findOne(id: string) {
     return this.prisma.orders.findUnique({

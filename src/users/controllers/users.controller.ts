@@ -5,7 +5,6 @@ import type { AuthenticatedUser } from '../../auth/interfaces/authenticated-user
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { RolesGuard } from '../../auth/guards/roles.guard';
-import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { UpdateBanStatusDto } from '../dto/update-ban-status.dto';
 import {
@@ -83,22 +82,6 @@ export class UsersController {
     );
   }
 
-  @Patch(':id/role')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Update user role',
-  })
-  updateUserRole(
-    @Param('id') id: string,
-    @Body() dto: UpdateUserRoleDto,
-  ) {
-    return this.usersService.updateUserRole(
-      id,
-      dto.role,
-    );
-  }
 
   @Patch(':id/role')
   @UseGuards(JwtAuthGuard, RolesGuard)

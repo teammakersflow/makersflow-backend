@@ -138,35 +138,7 @@ export class UsersService {
     };
   }
 
-  async updateUserRole(
-    userId: string,
-    role: string,
-  ) {
-    const user = await this.prisma.public_users.findUnique({
-      where: {
-        id: userId,
-      },
-    });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const updatedUser = await this.prisma.public_users.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        role,
-      },
-    });
-
-    return {
-      success: true,
-      message: 'User role updated successfully',
-      data: updatedUser,
-    };
-  }
 
   async updateBanStatus(
     userId: string,

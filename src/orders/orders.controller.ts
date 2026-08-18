@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { OrdersService } from './orders.service';
@@ -26,12 +27,18 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto);
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  findAll() {
-    return this.ordersService.findAll();
-  }
+@Get()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
+findAll(@Query('include') include?: string) {
+  const includeUser =
+    include
+      ?.split(',')
+      .map((item) => item.trim())
+      .includes('user') ?? false;
+
+  return this.ordersService.findAll(includeUser);
+}
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -43,6 +43,10 @@ export class CreateCourseDto {
   gst_rate?: number;
 
   @IsOptional()
+  @IsString()
+  hsn_code?: string;
+
+  @IsOptional()
   @IsBoolean()
   is_free?: boolean;
 
