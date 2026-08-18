@@ -24,6 +24,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { StorageModule } from './storage/storage.module';
 import { SettingsModule } from './settings/settings.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
+import { QuizQuestionsModule } from './quiz-questions/quiz-questions.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { PromoCodesModule } from './promo-codes/promo-codes.module';
     StorageModule,
     SettingsModule,
     PromoCodesModule,
+    QuizQuestionsModule,
   ],
   controllers: [AppController],
   providers: [
