@@ -25,6 +25,7 @@ import { StorageModule } from './storage/storage.module';
 import { SettingsModule } from './settings/settings.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { QuizQuestionsModule } from './quiz-questions/quiz-questions.module';
+import { LessonResourcesModule } from './lesson-resources/lesson-resources.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { QuizQuestionsModule } from './quiz-questions/quiz-questions.module';
     SettingsModule,
     PromoCodesModule,
     QuizQuestionsModule,
+    LessonResourcesModule,
   ],
   controllers: [AppController],
   providers: [
