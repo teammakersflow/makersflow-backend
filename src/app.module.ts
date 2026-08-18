@@ -23,6 +23,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { StorageModule } from './storage/storage.module';
 import { SettingsModule } from './settings/settings.module';
+import { PromoCodesModule } from './promo-codes/promo-codes.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { SettingsModule } from './settings/settings.module';
     AnalyticsModule,
     StorageModule,
     SettingsModule,
+    PromoCodesModule,
   ],
   controllers: [AppController],
   providers: [
