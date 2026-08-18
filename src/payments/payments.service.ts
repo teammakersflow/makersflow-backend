@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CreatePaymentDto } from './dto/create-payment.dto';
+
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @Injectable()
@@ -13,8 +16,27 @@ export class PaymentsService {
     });
   }
 
-  findAll() {
-    return this.prisma.payments.findMany();
+  async findAll(includeUser = false) {
+    if (!includeUser) {
+      return this.prisma.payments.findMany();
+    }
+
+    const payments = await this.prisma.payments.findMany({
+      include: {
+        users: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+          },
+        },
+      },
+    });
+
+    return payments.map(({ users, ...payment }) => ({
+      ...payment,
+      user: users,
+    }));
   }
 
   findOne(id: string) {
