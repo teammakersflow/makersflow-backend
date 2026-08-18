@@ -7,14 +7,19 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { EnrollmentsService } from './enrollments.service';
+
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
+
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
 import { RolesGuard } from '../auth/guards/roles.guard';
+
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('enrollments')
@@ -33,8 +38,19 @@ export class EnrollmentsController {
   }
 
   @Get()
-  findAll() {
-    return this.enrollmentsService.findAll();
+  findAll(@Query('include') include?: string) {
+    const includes =
+      include
+        ?.split(',')
+        .map((item) => item.trim()) ?? [];
+
+    const includeUser = includes.includes('user');
+    const includeCourse = includes.includes('course');
+
+    return this.enrollmentsService.findAll(
+      includeUser,
+      includeCourse,
+    );
   }
 
   @Get(':id')

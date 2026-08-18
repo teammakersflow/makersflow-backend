@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
+
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 
 @Injectable()
@@ -13,8 +16,74 @@ export class EnrollmentsService {
     });
   }
 
-  findAll() {
-    return this.prisma.enrollments.findMany();
+  async findAll(includeUser = false, includeCourse = false) {
+    if (!includeUser && !includeCourse) {
+      return this.prisma.enrollments.findMany();
+    }
+
+    const enrollments = await this.prisma.enrollments.findMany({
+      include: {
+        users: includeUser
+          ? {
+              select: {
+                id: true,
+                email: true,
+                raw_user_meta_data: true,
+              },
+            }
+          : false,
+
+        courses: includeCourse
+          ? {
+              select: {
+                id: true,
+                title: true,
+                price: true,
+                is_free: true,
+              },
+            }
+          : false,
+      },
+    });
+
+    return enrollments.map((enrollment) => {
+      const { users, courses, ...enrollmentData } = enrollment;
+
+      const result: any = {
+        ...enrollmentData,
+      };
+
+      if (includeUser && users) {
+        const metadata = users.raw_user_meta_data;
+
+        let fullName: string | null = null;
+
+        if (
+          metadata &&
+          typeof metadata === 'object' &&
+          !Array.isArray(metadata) &&
+          'full_name' in metadata
+        ) {
+          const value = (metadata as Record<string, unknown>).full_name;
+
+          if (typeof value === 'string') {
+            fullName = value;
+          }
+        }
+
+        result.user = {
+          id: users.id,
+          email: users.email,
+          full_name: fullName,
+        };
+      }
+
+      if (includeCourse && courses) {
+        result.course = courses;
+      }
+
+      return result;
+    });
   }
 
   findOne(id: string) {
