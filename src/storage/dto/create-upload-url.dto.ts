@@ -7,6 +7,21 @@ export class CreateUploadUrlDto {
   @IsString()
   contentType!: string;
 
-  @IsIn(['courses', 'products', 'uploads'])
-  folder!: 'courses' | 'products' | 'uploads';
+  @IsIn([
+    'courses',
+    'products',
+    'lessons',
+    'resources',
+    'uploads',
+    'news',
+    'avatars',
+  ])
+  folder!:
+    | 'courses'
+    | 'products'
+    | 'lessons'
+    | 'resources'
+    | 'uploads'
+    | 'news'
+    | 'avatars';
 }

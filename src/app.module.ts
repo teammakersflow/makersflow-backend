@@ -23,11 +23,17 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { StorageModule } from './storage/storage.module';
 import { SettingsModule } from './settings/settings.module';
-import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { QuizQuestionsModule } from './quiz-questions/quiz-questions.module';
-import { LessonResourcesModule } from './lesson-resources/lesson-resources.module';
 import { CoursePurchasesModule } from './course-purchases/course-purchases.module';
 import { LessonProgressModule } from './lesson-progress/lesson-progress.module';
+import { PromotionsModule } from './promotions/promotions.module';
+import { NewsModule } from './news/news.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
+import { LessonNotesModule } from './lesson-notes/lesson-notes.module';
+import { LessonResourcesModule } from './lesson-resources/lesson-resources.module';
+import { PromoCodesModule } from './promo-codes/promo-codes.module';
+import { ReviewRepliesModule } from './review-replies/review-replies.module';
+import { CouponUsageModule } from './coupon-usage/coupon-usage.module';
 
 @Module({
   imports: [
@@ -59,11 +65,17 @@ import { LessonProgressModule } from './lesson-progress/lesson-progress.module';
     AnalyticsModule,
     StorageModule,
     SettingsModule,
-    PromoCodesModule,
     QuizQuestionsModule,
-    LessonResourcesModule,
     CoursePurchasesModule,
     LessonProgressModule,
+    PromotionsModule,
+    NewsModule,
+    AnnouncementsModule,
+    LessonNotesModule,
+    LessonResourcesModule,
+    PromoCodesModule,
+    ReviewRepliesModule,
+    CouponUsageModule,
   ],
   controllers: [AppController],
   providers: [

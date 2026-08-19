@@ -1,14 +1,178 @@
-import { Injectable } from '@nestjs/common';
-
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
-
 import { CreatePaymentDto } from './dto/create-payment.dto';
-
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
+
+import Razorpay from 'razorpay';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private prisma: PrismaService) {}
+  private razorpay: Razorpay;
+
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
+    const keySecret = this.configService.get<string>(
+      'RAZORPAY_KEY_SECRET',
+    );
+
+    if (!keyId || !keySecret) {
+      throw new Error(
+        'RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required',
+      );
+    }
+
+    this.razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // CREATE RAZORPAY ORDER
+  // ─────────────────────────────────────────────
+
+  async createRazorpayOrder(
+    userId: string,
+    dto: CreateRazorpayOrderDto,
+  ) {
+    const amountInPaise = Math.round(dto.amount * 100);
+
+    const razorpayOrder = await this.razorpay.orders.create({
+      amount: amountInPaise,
+      currency: dto.currency || 'INR',
+      receipt:
+        dto.receipt ||
+        `receipt_${Date.now()}`,
+    });
+
+    // Save a pending payment in our database
+    const payment = await this.prisma.payments.create({
+      data: {
+        user_id: userId,
+        razorpay_order_id: razorpayOrder.id,
+        amount: dto.amount,
+        currency: dto.currency || 'INR',
+        status: 'pending',
+      },
+    });
+
+    return {
+      razorpay_order_id: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      payment_id: payment.id,
+      key_id: this.configService.get<string>(
+        'RAZORPAY_KEY_ID',
+      ),
+    };
+  }
+
+  // ─────────────────────────────────────────────
+  // VERIFY PAYMENT
+  // ─────────────────────────────────────────────
+
+  async verifyPayment(
+    userId: string,
+    dto: VerifyPaymentDto,
+  ) {
+    const payment = await this.prisma.payments.findUnique({
+      where: {
+        razorpay_order_id: dto.razorpay_order_id,
+      },
+    });
+
+    if (!payment) {
+      throw new NotFoundException(
+        'Payment record not found',
+      );
+    }
+
+    if (payment.user_id !== userId) {
+      throw new BadRequestException(
+        'Payment does not belong to this user',
+      );
+    }
+
+    const secret =
+      this.configService.get<string>(
+        'RAZORPAY_KEY_SECRET',
+      );
+
+    if (!secret) {
+      throw new BadRequestException(
+        'Razorpay secret is not configured',
+      );
+    }
+
+    const body =
+      dto.razorpay_order_id +
+      '|' +
+      dto.razorpay_payment_id;
+
+    const expectedSignature =
+      crypto
+        .createHmac('sha256', secret)
+        .update(body)
+        .digest('hex');
+
+    const receivedBuffer = Buffer.from(
+      dto.razorpay_signature,
+      'hex',
+    );
+
+    const expectedBuffer = Buffer.from(
+      expectedSignature,
+      'hex',
+    );
+
+    if (
+      receivedBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(
+        receivedBuffer,
+        expectedBuffer,
+      )
+    ) {
+      throw new BadRequestException(
+        'Invalid Razorpay payment signature',
+      );
+    }
+
+    const updatedPayment =
+      await this.prisma.payments.update({
+        where: {
+          razorpay_order_id:
+            dto.razorpay_order_id,
+        },
+        data: {
+          razorpay_payment_id:
+            dto.razorpay_payment_id,
+          razorpay_signature:
+            dto.razorpay_signature,
+          status: 'captured',
+        },
+      });
+
+    return {
+      success: true,
+      message: 'Payment verified successfully',
+      payment: updatedPayment,
+    };
+  }
+
+  // ─────────────────────────────────────────────
+  // EXISTING CRUD
+  // ─────────────────────────────────────────────
 
   create(createPaymentDto: CreatePaymentDto) {
     return this.prisma.payments.create({
@@ -45,7 +209,10 @@ export class PaymentsService {
     });
   }
 
-  update(id: string, updatePaymentDto: UpdatePaymentDto) {
+  update(
+    id: string,
+    updatePaymentDto: UpdatePaymentDto,
+  ) {
     return this.prisma.payments.update({
       where: { id },
       data: updatePaymentDto,

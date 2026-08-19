@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -73,14 +74,18 @@ export class StorageService {
   async createUploadUrl(
     fileName: string,
     contentType: string,
-    folder: 'courses' | 'products' | 'uploads',
+    folder: 
+      | 'courses' 
+      | 'products' 
+      | 'uploads' 
+      | 'lessons' 
+      | 'resources' 
+      | 'news' 
+      | 'avatars',
   ) {
     const s3 = this.getClient();
-
     const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
-
     const key = `${folder}/${randomUUID()}-${fileName}`;
-
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
@@ -91,9 +96,32 @@ export class StorageService {
       expiresIn: 300,
     });
 
+    const publicUrl =
+      `https://${bucket}.s3.${this.configService.get<string>('AWS_REGION')}.amazonaws.com/${key}`;
+
     return {
       uploadUrl,
       key,
+      publicUrl,
+    };
+  }
+
+  async deleteObject(key: string) {
+    const s3 = this.getClient();
+
+    const bucket =
+      this.configService.get<string>('AWS_S3_BUCKET')!;
+
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }),
+    );
+
+    return {
+      success: true,
+      message: 'File deleted successfully',
     };
   }
 }
