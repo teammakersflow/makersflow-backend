@@ -10,7 +10,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
 
 COPY prisma ./prisma
 RUN npx prisma generate
@@ -28,7 +28,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
 
 # `prisma` is a runtime dependency in this project, so generate here too —
 # the client is platform-specific and must match this image.

@@ -7,7 +7,7 @@ import {
 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Prisma } from '@prisma/client';
+import { Decimal } from 'decimal.js';
 
 function transformDecimals(value: any): any {
   if (value === null || value === undefined) {
@@ -15,7 +15,7 @@ function transformDecimals(value: any): any {
   }
 
   // Convert Prisma Decimal values to numbers
-  if (Prisma.Decimal.isDecimal(value)) {
+  if (Decimal.isDecimal(value)) {
     return Number(value);
   }
 
@@ -39,19 +39,15 @@ function transformDecimals(value: any): any {
 }
 
 @Injectable()
-export class ResponseInterceptor
-  implements NestInterceptor
-{
+export class ResponseInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<any> {
     return next.handle().pipe(
       map((data) => {
-        // Convert Prisma Decimal values before sending the response
         const transformedData = transformDecimals(data);
 
-        // If response is already formatted, don't wrap it again
         if (
           transformedData &&
           typeof transformedData === 'object' &&

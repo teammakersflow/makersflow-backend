@@ -4,7 +4,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { Prisma } from '@prisma/client';
+
 
 export class CreateQuizQuestionDto {
   @IsInt()
@@ -14,7 +14,8 @@ export class CreateQuizQuestionDto {
   question_text!: string;
 
   @IsArray()
-  options!: Prisma.InputJsonValue;
+  @IsString({ each: true })
+  options!: string[];
 
   @IsOptional()
   @IsInt()
