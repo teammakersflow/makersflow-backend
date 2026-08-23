@@ -12,17 +12,19 @@ import {
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { LessonNotesService } from './lesson-notes.service';
+
 import { CreateLessonNoteDto } from './dto/create-lesson-note.dto';
+
 import { UpdateLessonNoteDto } from './dto/update-lesson-note.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
 import { RolesGuard } from '../auth/guards/roles.guard';
+
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('lesson-notes')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
 export class LessonNotesController {
   constructor(
     private readonly lessonNotesService: LessonNotesService,
@@ -38,6 +40,8 @@ export class LessonNotesController {
     return this.lessonNotesService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   create(
     @Body() createLessonNoteDto: CreateLessonNoteDto,
@@ -47,6 +51,8 @@ export class LessonNotesController {
     );
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -58,6 +64,8 @@ export class LessonNotesController {
     );
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.lessonNotesService.remove(id);
