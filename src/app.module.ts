@@ -34,6 +34,7 @@ import { LessonResourcesModule } from './lesson-resources/lesson-resources.modul
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { ReviewRepliesModule } from './review-replies/review-replies.module';
 import { CouponUsageModule } from './coupon-usage/coupon-usage.module';
+import { ShippingAddressesModule } from './shipping-addresses/shipping-addresses.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { CouponUsageModule } from './coupon-usage/coupon-usage.module';
     PromoCodesModule,
     ReviewRepliesModule,
     CouponUsageModule,
+    ShippingAddressesModule,
   ],
   controllers: [AppController],
   providers: [
