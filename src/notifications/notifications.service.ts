@@ -35,4 +35,40 @@ export class NotificationsService {
       where: { id },
     });
   }
+
+  async findMyNotifications(userId: string) {
+  return this.prisma.notifications.findMany({
+    where: {
+      user_id: userId,
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+  });
+}
+
+async getUnreadCount(userId: string) {
+  const count = await this.prisma.notifications.count({
+    where: {
+      user_id: userId,
+      is_read: false,
+    },
+  });
+
+  return {
+    count,
+  };
+}
+
+async markAsRead(userId: string, id: string) {
+  return this.prisma.notifications.updateMany({
+    where: {
+      id,
+      user_id: userId,
+    },
+    data: {
+      is_read: true,
+    },
+  });
+}
 }
