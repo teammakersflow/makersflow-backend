@@ -19,10 +19,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
+import { Req } from '@nestjs/common';
+import type { Request } from 'express';
+import { ValidateCouponDto } from './dto/validate-coupon.dto';
 @Controller('coupons')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
 export class CouponsController {
   constructor(
     private readonly couponsService: CouponsService,
@@ -38,6 +39,19 @@ export class CouponsController {
     return this.couponsService.findAll();
   }
 
+  @Post('validate')
+@UseGuards(JwtAuthGuard)
+validate(
+  @Req() req: Request,
+  @Body() dto: ValidateCouponDto,
+) {
+  const user = req.user as any;
+
+  return this.couponsService.validate(
+    user.id,
+    dto,
+  );
+}
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.couponsService.findOne(id);
