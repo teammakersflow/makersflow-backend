@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Query,
+  Request,
 } from '@nestjs/common';
 
 import { OrdersService } from './orders.service';
@@ -42,6 +43,21 @@ findAll(@Query('include') include?: string) {
       .includes('user') ?? false;
 
   return this.ordersService.findAll(includeUser);
+}
+
+@Get('my')
+@UseGuards(JwtAuthGuard)
+findMyOrders(@Request() req: any) {
+  return this.ordersService.findMyOrders(req.user.id);
+}
+
+@Get('my/:id')
+@UseGuards(JwtAuthGuard)
+findMyOrder(
+  @Request() req: any,
+  @Param('id') id: string,
+) {
+  return this.ordersService.findMyOrder(req.user.id, id);
 }
 
   @Get(':id')

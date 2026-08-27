@@ -40,6 +40,25 @@ async findAll(includeUser = false) {
     user: users,
   }));
 }
+async findMyOrders(userId: string) {
+  return this.prisma.orders.findMany({
+    where: {
+      user_id: userId,
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+  });
+}
+
+async findMyOrder(userId: string, orderId: string) {
+  return this.prisma.orders.findFirst({
+    where: {
+      id: orderId,
+      user_id: userId,
+    },
+  });
+}
 
   findOne(id: string) {
     return this.prisma.orders.findUnique({
