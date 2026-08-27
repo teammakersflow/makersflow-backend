@@ -1,8 +1,10 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 
+import { EnrollmentsService } from '../enrollments/enrollments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLessonNoteDto } from './dto/create-lesson-note.dto';
 import { UpdateLessonNoteDto } from './dto/update-lesson-note.dto';
@@ -11,6 +13,7 @@ import { UpdateLessonNoteDto } from './dto/update-lesson-note.dto';
 export class LessonNotesService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly enrollmentsService: EnrollmentsService,
   ) {}
 
   findAll() {
@@ -100,5 +103,104 @@ export class LessonNotesService {
         id,
       },
     });
+  }
+
+    // =========================
+  // STUDENT METHODS
+  // =========================
+
+  async findByLessonForStudent(
+    lessonId: bigint,
+    userId: string,
+  ) {
+    const lesson = await this.prisma.lessons.findUnique({
+      where: {
+        id: lessonId,
+      },
+      include: {
+        modules: {
+          select: {
+            course_id: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    if (!lesson.is_preview) {
+      const enrollment =
+        await this.enrollmentsService.findMyEnrollment(
+          userId,
+          lesson.modules.course_id,
+        );
+
+      if (!enrollment) {
+        throw new ForbiddenException(
+          'You are not enrolled in this course',
+        );
+      }
+    }
+
+    return this.prisma.lesson_notes.findMany({
+      where: {
+        lesson_id: lessonId,
+      },
+      orderBy: {
+        position: 'asc',
+      },
+    });
+  }
+
+  async findOneForStudent(
+    id: string,
+    userId: string,
+  ) {
+    const note = await this.prisma.lesson_notes.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!note) {
+      throw new NotFoundException(
+        'Lesson note not found',
+      );
+    }
+
+    const lesson = await this.prisma.lessons.findUnique({
+      where: {
+        id: note.lesson_id,
+      },
+      include: {
+        modules: {
+          select: {
+            course_id: true,
+          },
+        },
+      },
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    if (!lesson.is_preview) {
+      const enrollment =
+        await this.enrollmentsService.findMyEnrollment(
+          userId,
+          lesson.modules.course_id,
+        );
+
+      if (!enrollment) {
+        throw new ForbiddenException(
+          'You are not enrolled in this course',
+        );
+      }
+    }
+
+    return note;
   }
 }

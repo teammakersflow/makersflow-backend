@@ -12,15 +12,12 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { AuthService } from '../services/auth.service';
-import { GoogleLoginDto } from '../dto/google-login.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { CurrentUser } from '../decorators/current-user.decorator';
-import type { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
-import { RefreshTokenDto } from '../dto/refresh-token.dto';
-
-
-
+import { AuthService } from './auth.service';
+import { GoogleLoginDto } from './dto/google-login.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { AuthenticatedUser } from './interfaces/authenticated-user.interface';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -42,13 +39,13 @@ export class AuthController {
   @ApiOperation({
     summary: 'Get current logged in user',
   })
-  getCurrentUser(
+  async getCurrentUser(
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return {
       success: true,
       message: 'Authenticated user fetched successfully',
-      data: user,
+      data: await this.authService.getCurrentUser(user.id),
     };
   }
 

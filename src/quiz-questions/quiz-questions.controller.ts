@@ -10,16 +10,13 @@ import {
 } from '@nestjs/common';
 
 import { QuizQuestionsService } from './quiz-questions.service';
-
 import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
-
 import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
-
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
 import { RolesGuard } from '../auth/guards/roles.guard';
-
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 @Controller('quiz-questions')
 export class QuizQuestionsController {
@@ -34,14 +31,28 @@ export class QuizQuestionsController {
     return this.quizQuestionsService.create(createQuizQuestionDto);
   }
 
-  @Get()
-  findAll() {
-    return this.quizQuestionsService.findAll();
+  @Get('lesson/:lessonId')
+  @UseGuards(JwtAuthGuard)
+  findByLesson(
+    @Param('lessonId') lessonId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.quizQuestionsService.findByLessonForStudent(
+      BigInt(lessonId),
+      user.id,
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.quizQuestionsService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.quizQuestionsService.findOneForStudent(
+      id,
+      user.id,
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

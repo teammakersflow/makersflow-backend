@@ -1,24 +1,16 @@
 import {
   IsBoolean,
   IsDateString,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsUUID,
   Min,
 } from 'class-validator';
 
 export class CreateLessonProgressDto {
-  @IsUUID()
-  @IsNotEmpty()
-  user_id!: string;
-
   @IsNumber()
-  @IsNotEmpty()
   course_id!: number;
 
   @IsNumber()
-  @IsNotEmpty()
   lesson_id!: number;
 
   @IsBoolean()

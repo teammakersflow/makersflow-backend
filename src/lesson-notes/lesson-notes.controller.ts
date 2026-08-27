@@ -10,18 +10,14 @@ import {
 } from '@nestjs/common';
 
 import { ApiBearerAuth } from '@nestjs/swagger';
-
 import { LessonNotesService } from './lesson-notes.service';
-
 import { CreateLessonNoteDto } from './dto/create-lesson-note.dto';
-
 import { UpdateLessonNoteDto } from './dto/update-lesson-note.dto';
-
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
 import { RolesGuard } from '../auth/guards/roles.guard';
-
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 @Controller('lesson-notes')
 @ApiBearerAuth()
@@ -30,14 +26,28 @@ export class LessonNotesController {
     private readonly lessonNotesService: LessonNotesService,
   ) {}
 
-  @Get()
-  findAll() {
-    return this.lessonNotesService.findAll();
+  @Get('lesson/:lessonId')
+  @UseGuards(JwtAuthGuard)
+  findByLesson(
+    @Param('lessonId') lessonId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lessonNotesService.findByLessonForStudent(
+      BigInt(lessonId),
+      user.id,
+    );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.lessonNotesService.findOne(id);
+  @UseGuards(JwtAuthGuard)
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lessonNotesService.findOneForStudent(
+      id,
+      user.id,
+    );
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

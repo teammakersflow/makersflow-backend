@@ -16,6 +16,8 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 @Controller('lessons')
 export class LessonsController {
@@ -36,8 +38,15 @@ export class LessonsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.lessonsService.findOne(BigInt(id));
+  @UseGuards(JwtAuthGuard)
+  findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lessonsService.findOneForStudent(
+      BigInt(id),
+      user.id,
+    );
   }
 
   @Patch(':id')

@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
@@ -167,5 +167,28 @@ export class AuthService {
       success: true,
       message: 'Logged out successfully',
     };
+  }
+
+  async getCurrentUser(userId: string) {
+    const user = await this.prisma.public_users.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        avatar_url: true,
+        grade: true,
+        school: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
   }
 }
