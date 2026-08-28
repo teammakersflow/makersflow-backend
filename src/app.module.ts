@@ -35,6 +35,7 @@ import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { ReviewRepliesModule } from './review-replies/review-replies.module';
 import { CouponUsageModule } from './coupon-usage/coupon-usage.module';
 import { ShippingAddressesModule } from './shipping-addresses/shipping-addresses.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { ShippingAddressesModule } from './shipping-addresses/shipping-addresses
     ReviewRepliesModule,
     CouponUsageModule,
     ShippingAddressesModule,
+    WishlistModule,
   ],
   controllers: [AppController],
   providers: [

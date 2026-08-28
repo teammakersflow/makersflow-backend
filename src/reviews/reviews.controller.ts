@@ -11,8 +11,10 @@ import {
 } from '@nestjs/common';
 
 import { ReviewsService } from './reviews.service';
+
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { SubmitReviewDto } from './dto/submit-review.dto';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -26,6 +28,49 @@ export class ReviewsController {
   constructor(
     private readonly reviewsService: ReviewsService,
   ) {}
+
+  // =========================
+  // STUDENT COURSE REVIEWS
+  // =========================
+
+  @Get('course/:courseId')
+  findCourseReviews(
+    @Param('courseId') courseId: string,
+  ) {
+    return this.reviewsService.findCourseReviews(
+      BigInt(courseId),
+    );
+  }
+
+  @Get('course/:courseId/my')
+  @UseGuards(JwtAuthGuard)
+  findMyCourseReview(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reviewsService.findMyCourseReview(
+      user.id,
+      BigInt(courseId),
+    );
+  }
+
+  @Post('course/:courseId')
+  @UseGuards(JwtAuthGuard)
+  submitCourseReview(
+    @Param('courseId') courseId: string,
+    @Body() submitReviewDto: SubmitReviewDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reviewsService.submitCourseReview(
+      user.id,
+      BigInt(courseId),
+      submitReviewDto,
+    );
+  }
+
+  // =========================
+  // EXISTING ROUTES
+  // =========================
 
   @Post()
   @UseGuards(JwtAuthGuard)

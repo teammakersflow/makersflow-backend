@@ -1,12 +1,12 @@
-import { UsersService } from '../services/users.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import type { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
-import { UpdateProfileDto } from '../dto/update-profile.dto';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { UpdateRoleDto } from '../dto/update-role.dto';
-import { UpdateBanStatusDto } from '../dto/update-ban-status.dto';
+import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { UpdateRoleDto } from './dto/update-role.dto';
+import { UpdateBanStatusDto } from './dto/update-ban-status.dto';
 import {
   Body,
   Controller,
