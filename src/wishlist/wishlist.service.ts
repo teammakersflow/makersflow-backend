@@ -74,4 +74,33 @@ export class WishlistService {
       throw error;
     }
   }
+
+    async removeFromWishlist(
+    userId: string,
+    productId: bigint,
+  ) {
+    const wishlistItem = await this.prisma.wishlist.findUnique({
+      where: {
+        user_id_product_id: {
+          user_id: userId,
+          product_id: productId,
+        },
+      },
+    });
+
+    if (!wishlistItem) {
+      throw new NotFoundException(
+        'Product is not in wishlist',
+      );
+    }
+
+    return this.prisma.wishlist.delete({
+      where: {
+        user_id_product_id: {
+          user_id: userId,
+          product_id: productId,
+        },
+      },
+    });
+  }
 }

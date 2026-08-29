@@ -231,4 +231,150 @@ export class ReviewsService {
       },
     });
   }
+
+    // =========================
+  // STUDENT PRODUCT REVIEWS
+  // =========================
+
+  async findProductReviews(productId: bigint) {
+    const product = await this.prisma.products.findUnique({
+      where: {
+        id: productId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product_reviews.findMany({
+      where: {
+        product_id: productId,
+        status: 'approved',
+      },
+      select: {
+        id: true,
+        user_id: true,
+        product_id: true,
+        rating: true,
+        comment: true,
+        approved_comment: true,
+        created_at: true,
+        users: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
+  async findMyProductReview(
+    userId: string,
+    productId: bigint,
+  ) {
+    const product = await this.prisma.products.findUnique({
+      where: {
+        id: productId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product_reviews.findUnique({
+      where: {
+        user_id_product_id: {
+          user_id: userId,
+          product_id: productId,
+        },
+      },
+    });
+  }
+
+  async submitProductReview(
+    userId: string,
+    productId: bigint,
+    submitReviewDto: SubmitReviewDto,
+  ) {
+    const product = await this.prisma.products.findUnique({
+      where: {
+        id: productId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product_reviews.upsert({
+      where: {
+        user_id_product_id: {
+          user_id: userId,
+          product_id: productId,
+        },
+      },
+
+      create: {
+        user_id: userId,
+        product_id: productId,
+        rating: submitReviewDto.rating,
+        comment: submitReviewDto.comment,
+        status: 'pending',
+      },
+
+      update: {
+        rating: submitReviewDto.rating,
+        comment: submitReviewDto.comment,
+        status: 'pending',
+      },
+    });
+  }
+
+    // =========================
+  // RATING SUMMARIES
+  // =========================
+
+  async findCourseRatingSummaries() {
+    return this.prisma.reviews.groupBy({
+      by: ['course_id'],
+      where: {
+        status: 'approved',
+      },
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
+  }
+
+  async findProductRatingSummaries() {
+    return this.prisma.product_reviews.groupBy({
+      by: ['product_id'],
+      where: {
+        status: 'approved',
+      },
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        id: true,
+      },
+    });
+  }
 }

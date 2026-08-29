@@ -68,6 +68,59 @@ export class ReviewsController {
     );
   }
 
+    // =========================
+  // STUDENT PRODUCT REVIEWS
+  // =========================
+
+  @Get('product/:productId')
+  findProductReviews(
+    @Param('productId') productId: string,
+  ) {
+    return this.reviewsService.findProductReviews(
+      BigInt(productId),
+    );
+  }
+
+  @Get('product/:productId/my')
+  @UseGuards(JwtAuthGuard)
+  findMyProductReview(
+    @Param('productId') productId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reviewsService.findMyProductReview(
+      user.id,
+      BigInt(productId),
+    );
+  }
+
+  @Post('product/:productId')
+  @UseGuards(JwtAuthGuard)
+  submitProductReview(
+    @Param('productId') productId: string,
+    @Body() submitReviewDto: SubmitReviewDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reviewsService.submitProductReview(
+      user.id,
+      BigInt(productId),
+      submitReviewDto,
+    );
+  }
+
+    // =========================
+  // RATING SUMMARIES
+  // =========================
+
+  @Get('ratings/courses')
+  findCourseRatingSummaries() {
+    return this.reviewsService.findCourseRatingSummaries();
+  }
+
+  @Get('ratings/products')
+  findProductRatingSummaries() {
+    return this.reviewsService.findProductRatingSummaries();
+  }
+  
   // =========================
   // EXISTING ROUTES
   // =========================

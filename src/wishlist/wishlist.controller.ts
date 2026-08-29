@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Param,
   UseGuards,
 } from '@nestjs/common';
@@ -35,6 +36,17 @@ export class WishlistController {
     @Param('productId') productId: string,
   ) {
     return this.wishlistService.addToWishlist(
+      user.id,
+      BigInt(productId),
+    );
+  }
+
+    @Delete(':productId')
+  removeFromWishlist(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId') productId: string,
+  ) {
+    return this.wishlistService.removeFromWishlist(
       user.id,
       BigInt(productId),
     );
