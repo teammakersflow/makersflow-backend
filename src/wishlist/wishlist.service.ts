@@ -24,10 +24,7 @@ export class WishlistService {
     });
   }
 
-  async addToWishlist(
-    userId: string,
-    productId: bigint,
-  ) {
+  async addToWishlist(userId: string, productId: bigint) {
     const product = await this.prisma.products.findUnique({
       where: {
         id: productId,
@@ -75,10 +72,7 @@ export class WishlistService {
     }
   }
 
-    async removeFromWishlist(
-    userId: string,
-    productId: bigint,
-  ) {
+  async removeFromWishlist(userId: string, productId: bigint) {
     const wishlistItem = await this.prisma.wishlist.findUnique({
       where: {
         user_id_product_id: {
