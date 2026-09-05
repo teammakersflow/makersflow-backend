@@ -128,6 +128,70 @@ export class QuizQuestionsService {
     });
   }
 
+async findByCourseForStudent(
+  courseId: bigint,
+  userId: string,
+) {
+  const course = await this.prisma.courses.findUnique({
+    where: {
+      id: courseId,
+    },
+  });
+
+  if (!course) {
+    throw new NotFoundException('Course not found');
+  }
+
+  const enrollment =
+    await this.enrollmentsService.findMyEnrollment(
+      userId,
+      courseId,
+    );
+
+  if (!enrollment) {
+    throw new ForbiddenException(
+      'You are not enrolled in this course',
+    );
+  }
+
+  const lessons = await this.prisma.lessons.findMany({
+    where: {
+      modules: {
+        course_id: courseId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  const lessonIds = lessons.map((lesson) => lesson.id);
+
+  return this.prisma.quiz_questions.findMany({
+    where: {
+      lesson_id: {
+        in: lessonIds,
+      },
+    },
+    select: {
+      id: true,
+      lesson_id: true,
+      question_text: true,
+      options: true,
+      position: true,
+      created_at: true,
+    },
+    orderBy: [
+      {
+        lesson_id: 'asc',
+      },
+      {
+        position: 'asc',
+      },
+    ],
+  });
+}
+
   async findOneForStudent(
     id: string,
     userId: string,

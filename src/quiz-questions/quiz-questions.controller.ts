@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { QuizQuestionsService } from './quiz-questions.service';
@@ -30,6 +31,18 @@ export class QuizQuestionsController {
   create(@Body() createQuizQuestionDto: CreateQuizQuestionDto) {
     return this.quizQuestionsService.create(createQuizQuestionDto);
   }
+
+  @Get()
+@UseGuards(JwtAuthGuard)
+findByCourse(
+  @Query('courseId') courseId: string,
+  @CurrentUser() user: AuthenticatedUser,
+) {
+  return this.quizQuestionsService.findByCourseForStudent(
+    BigInt(courseId),
+    user.id,
+  );
+}
 
   @Get('lesson/:lessonId')
   @UseGuards(JwtAuthGuard)
