@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -26,6 +27,17 @@ export class LessonNotesController {
     private readonly lessonNotesService: LessonNotesService,
   ) {}
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findByLessonQuery(
+    @Query('lessonId') lessonId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lessonNotesService.findByLessonForStudent(
+      BigInt(lessonId),
+      user.id,
+    );
+  }
   @Get('lesson/:lessonId')
   @UseGuards(JwtAuthGuard)
   findByLesson(
