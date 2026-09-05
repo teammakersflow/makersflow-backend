@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { LessonResourcesService } from './lesson-resources.service';
@@ -28,6 +29,18 @@ export class LessonResourcesController {
   @Post()
   create(@Body() createLessonResourceDto: CreateLessonResourceDto) {
     return this.lessonResourcesService.create(createLessonResourceDto);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  findByLessonQuery(
+    @Query('lessonId') lessonId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.lessonResourcesService.findByLessonForStudent(
+      BigInt(lessonId),
+      user.id,
+    );
   }
 
   @Get('lesson/:lessonId')
