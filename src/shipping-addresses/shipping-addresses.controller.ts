@@ -6,18 +6,15 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 
-import type { Request } from 'express';
-
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 import { ShippingAddressesService } from './shipping-addresses.service';
-
 import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
-
 import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
 
 @Controller('shipping-addresses')
@@ -29,11 +26,9 @@ export class ShippingAddressesController {
 
   @Post()
   create(
-    @Req() req: Request,
+    @CurrentUser() user: AuthenticatedUser,
     @Body() createShippingAddressDto: CreateShippingAddressDto,
   ) {
-    const user = req.user as any;
-
     return this.shippingAddressesService.create(
       user.id,
       createShippingAddressDto,
@@ -41,22 +36,16 @@ export class ShippingAddressesController {
   }
 
   @Get()
-  findAll(@Req() req: Request) {
-    const user = req.user as any;
-
-    return this.shippingAddressesService.findAll(
-      user.id,
-    );
+  findAll(@CurrentUser() user: AuthenticatedUser) {
+    return this.shippingAddressesService.findAll(user.id);
   }
 
   @Patch(':id')
   update(
-    @Req() req: Request,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() updateShippingAddressDto: UpdateShippingAddressDto,
   ) {
-    const user = req.user as any;
-
     return this.shippingAddressesService.update(
       user.id,
       BigInt(id),
@@ -66,11 +55,9 @@ export class ShippingAddressesController {
 
   @Delete(':id')
   remove(
-    @Req() req: Request,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
   ) {
-    const user = req.user as any;
-
     return this.shippingAddressesService.remove(
       user.id,
       BigInt(id),
