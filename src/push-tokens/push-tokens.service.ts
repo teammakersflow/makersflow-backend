@@ -61,4 +61,11 @@ export class PushTokensService {
       },
     });
   }
+  findMyTokens(userId: string) {
+  return this.prisma.push_tokens.findMany({
+    where: {
+      user_id: userId,
+    },
+  });
+}
 }
