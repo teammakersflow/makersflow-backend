@@ -38,6 +38,7 @@ import { ShippingAddressesModule } from './shipping-addresses/shipping-addresses
 import { WishlistModule } from './wishlist/wishlist.module';
 import { PushTokensModule } from './push-tokens/push-tokens.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { SecurityLogsModule } from './security-logs/security-logs.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     WishlistModule,
     PushTokensModule,
     FeedbackModule,
+    SecurityLogsModule,
   ],
   controllers: [AppController],
   providers: [
