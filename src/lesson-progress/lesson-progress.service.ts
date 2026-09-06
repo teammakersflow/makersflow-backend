@@ -7,13 +7,17 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { StreaksService } from '../streaks/streaks.service';
 
 import { CreateLessonProgressDto } from './dto/create-lesson-progress.dto';
 import { UpdateLessonProgressDto } from './dto/update-lesson-progress.dto';
 
 @Injectable()
 export class LessonProgressService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly streaksService: StreaksService,
+  ) {}
 
   // =========================
   // SECURITY HELPERS
@@ -213,25 +217,34 @@ export class LessonProgressService {
       );
     }
 
-    return this.prisma.lesson_progress.create({
-      data: {
-        user_id: userId,
-        course_id: courseId,
-        lesson_id: lessonId,
-        is_completed:
-          dto.is_completed ?? false,
-        current_time_secs:
-          dto.current_time_secs ?? 0,
-        watch_percentage:
-          dto.watch_percentage ?? 0,
-        time_spent_secs:
-          dto.time_spent_secs ?? 0,
-        last_watched_at:
-          dto.last_watched_at
-            ? new Date(dto.last_watched_at)
-            : undefined,
-      },
-    });
+    const progress =
+      await this.prisma.lesson_progress.create({
+        data: {
+          user_id: userId,
+          course_id: courseId,
+          lesson_id: lessonId,
+          is_completed:
+            dto.is_completed ?? false,
+          current_time_secs:
+            dto.current_time_secs ?? 0,
+          watch_percentage:
+            dto.watch_percentage ?? 0,
+          time_spent_secs:
+            dto.time_spent_secs ?? 0,
+          last_watched_at:
+            dto.last_watched_at
+              ? new Date(dto.last_watched_at)
+              : undefined,
+        },
+      });
+
+    // Record learning activity only when
+    // the lesson is created as completed.
+    if (progress.is_completed) {
+      await this.streaksService.recordActivity(userId);
+    }
+
+    return progress;
   }
 
   // =========================
@@ -334,12 +347,24 @@ export class LessonProgressService {
         new Date(dto.last_watched_at);
     }
 
-    return this.prisma.lesson_progress.update({
-      where: {
-        id,
-      },
-      data,
-    });
+    // Remember whether the lesson was already completed.
+    const wasCompleted = existing.is_completed;
+
+    const progress =
+      await this.prisma.lesson_progress.update({
+        where: {
+          id,
+        },
+        data,
+      });
+
+    // Record activity only when the lesson changes
+    // from incomplete → completed.
+    if (!wasCompleted && progress.is_completed) {
+      await this.streaksService.recordActivity(userId);
+    }
+
+    return progress;
   }
 
   // =========================
