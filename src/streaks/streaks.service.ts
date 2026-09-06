@@ -6,8 +6,8 @@ export class StreaksService {
   constructor(private readonly prisma: PrismaService) {}
 
   async recordActivity(userId: string) {
-    // Use today's date at UTC midnight.
-    // The streaks table stores dates, not timestamps.
+    console.log('[STREAK] recordActivity() called:', userId);
+
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
@@ -17,17 +17,23 @@ export class StreaksService {
       },
     });
 
+    console.log('[STREAK] Existing record:', existing);
+
     // No streak record yet
     if (!existing) {
-      return this.prisma.streaks.create({
+      const created = await this.prisma.streaks.create({
         data: {
           user_id: userId,
           current_streak: 1,
           longest_streak: 1,
           last_activity_date: today,
-          activity_log: [today],
+          activity_log: [new Date(today)],
         },
       });
+
+      console.log('[STREAK] Created:', created);
+
+      return created;
     }
 
     const lastActivity = existing.last_activity_date
@@ -38,18 +44,22 @@ export class StreaksService {
       lastActivity.setUTCHours(0, 0, 0, 0);
     }
 
-    // Same day: don't increment anything.
+    // Same day = don't increment again
     if (
       lastActivity &&
       lastActivity.getTime() === today.getTime()
     ) {
+      console.log(
+        '[STREAK] Activity already recorded today',
+      );
+
       return existing;
     }
 
     const oneDay = 24 * 60 * 60 * 1000;
 
     const isConsecutiveDay =
-      lastActivity &&
+      lastActivity !== null &&
       today.getTime() - lastActivity.getTime() === oneDay;
 
     const currentStreak = isConsecutiveDay
@@ -61,9 +71,19 @@ export class StreaksService {
       existing.longest_streak ?? 0,
     );
 
-    const activityLog = existing.activity_log ?? [];
+    const activityLog = [
+      ...(existing.activity_log ?? []).map(
+        (date) => new Date(date),
+      ),
+      new Date(today),
+    ];
 
-    return this.prisma.streaks.update({
+    console.log('[STREAK] Activity log BEFORE save:', {
+      length: activityLog.length,
+      values: activityLog,
+    });
+
+    const updated = await this.prisma.streaks.update({
       where: {
         user_id: userId,
       },
@@ -72,12 +92,15 @@ export class StreaksService {
         longest_streak: longestStreak,
         last_activity_date: today,
         activity_log: {
-          push: today,
+          set: activityLog,
         },
       },
     });
-  }
 
+    console.log('[STREAK] Updated record:', updated);
+
+    return updated;
+  }
   async findMyStreak(userId: string) {
     return this.prisma.streaks.findUnique({
       where: {

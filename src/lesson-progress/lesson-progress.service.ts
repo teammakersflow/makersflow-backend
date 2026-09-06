@@ -361,13 +361,44 @@ async update(
 
   // Only record activity when the lesson
   // changes from incomplete -> completed.
-  const newlyCompleted =
-    existing.is_completed === false &&
-    dto.is_completed === true;
+ const newlyCompleted =
+  existing.is_completed === false &&
+  dto.is_completed === true;
 
-  if (newlyCompleted) {
+  console.log('[LESSON PROGRESS] existing:', {
+  id: existing.id.toString(),
+  userId: existing.user_id,
+  isCompleted: existing.is_completed,
+});
+
+console.log('[LESSON PROGRESS] dto:', {
+  isCompleted: dto.is_completed,
+});
+
+console.log(
+  '[LESSON PROGRESS] newlyCompleted:',
+  newlyCompleted,
+);
+
+console.log('[STREAK DEBUG]', {
+  progressId: id.toString(),
+  existingCompleted: existing.is_completed,
+  dtoCompleted: dto.is_completed,
+  newlyCompleted,
+  userId,
+});
+
+if (newlyCompleted) {
+  console.log('[STREAK DEBUG] Calling recordActivity()');
+
+  const streak =
     await this.streaksService.recordActivity(userId);
-  }
+
+  console.log(
+    '[STREAK DEBUG] recordActivity() returned:',
+    streak,
+  );
+}
 
   return updated;
 }

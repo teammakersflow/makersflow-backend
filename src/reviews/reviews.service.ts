@@ -37,16 +37,6 @@ export class ReviewsService {
 
     return this.prisma.reviews.findMany({
       include: {
-        users: includeUser
-          ? {
-              select: {
-                id: true,
-                email: true,
-                full_name: true,
-              },
-            }
-          : false,
-
         courses: includeCourse
           ? {
               select: {
@@ -149,13 +139,6 @@ export class ReviewsService {
         comment: true,
         approved_comment: true,
         created_at: true,
-        users: {
-          select: {
-            id: true,
-            full_name: true,
-            avatar_url: true,
-          },
-        },
       },
       orderBy: {
         created_at: 'desc',
@@ -263,11 +246,6 @@ export class ReviewsService {
         comment: true,
         approved_comment: true,
         created_at: true,
-        users: {
-          select: {
-            id: true,
-          },
-        },
       },
       orderBy: {
         created_at: 'desc',
