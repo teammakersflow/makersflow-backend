@@ -247,125 +247,130 @@ async create(
   return progress;
 }
 
-  // =========================
-  // UPDATE PROGRESS
-  // =========================
+// =========================
+// UPDATE PROGRESS
+// =========================
 
-  async update(
-    userId: string,
-    id: bigint,
-    dto: UpdateLessonProgressDto,
-  ) {
-    const existing =
-      await this.prisma.lesson_progress.findUnique({
-        where: {
-          id,
-        },
-      });
+async update(
+  userId: string,
+  id: bigint,
+  dto: UpdateLessonProgressDto,
+) {
+  const existing =
+    await this.prisma.lesson_progress.findUnique({
+      where: {
+        id,
+      },
+    });
 
-    if (!existing) {
-      throw new NotFoundException(
-        'Lesson progress not found',
-      );
-    }
-
-    if (existing.user_id !== userId) {
-      throw new ForbiddenException(
-        'You cannot modify another student\'s progress',
-      );
-    }
-
-    if (
-      dto.course_id !== undefined &&
-      BigInt(dto.course_id) !== existing.course_id
-    ) {
-      throw new BadRequestException(
-        'Course cannot be changed',
-      );
-    }
-
-    if (
-      dto.lesson_id !== undefined &&
-      BigInt(dto.lesson_id) !== existing.lesson_id
-    ) {
-      throw new BadRequestException(
-        'Lesson cannot be changed',
-      );
-    }
-
-    const courseId =
-      dto.course_id !== undefined
-        ? BigInt(dto.course_id)
-        : existing.course_id;
-
-    const lessonId =
-      dto.lesson_id !== undefined
-        ? BigInt(dto.lesson_id)
-        : existing.lesson_id;
-
-    await this.verifyEnrollment(
-      userId,
-      courseId,
+  if (!existing) {
+    throw new NotFoundException(
+      'Lesson progress not found',
     );
-
-    await this.verifyLessonBelongsToCourse(
-      lessonId,
-      courseId,
-    );
-
-    const data: any = {};
-
-    if (dto.is_completed !== undefined) {
-      data.is_completed = dto.is_completed;
-    }
-
-    if (
-      dto.current_time_secs !== undefined
-    ) {
-      data.current_time_secs =
-        dto.current_time_secs;
-    }
-
-    if (
-      dto.watch_percentage !== undefined
-    ) {
-      data.watch_percentage =
-        dto.watch_percentage;
-    }
-
-    if (
-      dto.time_spent_secs !== undefined
-    ) {
-      data.time_spent_secs =
-        dto.time_spent_secs;
-    }
-
-    if (
-      dto.last_watched_at !== undefined
-    ) {
-      data.last_watched_at =
-        new Date(dto.last_watched_at);
-    }
-
-    // Remember whether the lesson was already completed.
-    const wasCompleted = existing.is_completed;
-
-    const progress =
-      await this.prisma.lesson_progress.update({
-        where: {
-          id,
-        },
-        data,
-      });
-
-    // Record activity only when the lesson changes
-    // from incomplete → completed.
-    if (!wasCompleted && progress.is_completed) {
-      await this.streaksService.recordActivity(userId);
-    }
-
-    return progress;
   }
+
+  if (existing.user_id !== userId) {
+    throw new ForbiddenException(
+      'You cannot modify another student\'s progress',
+    );
+  }
+
+  if (
+    dto.course_id !== undefined &&
+    BigInt(dto.course_id) !== existing.course_id
+  ) {
+    throw new BadRequestException(
+      'Course cannot be changed',
+    );
+  }
+
+  if (
+    dto.lesson_id !== undefined &&
+    BigInt(dto.lesson_id) !== existing.lesson_id
+  ) {
+    throw new BadRequestException(
+      'Lesson cannot be changed',
+    );
+  }
+
+  const courseId =
+    dto.course_id !== undefined
+      ? BigInt(dto.course_id)
+      : existing.course_id;
+
+  const lessonId =
+    dto.lesson_id !== undefined
+      ? BigInt(dto.lesson_id)
+      : existing.lesson_id;
+
+  await this.verifyEnrollment(
+    userId,
+    courseId,
+  );
+
+  await this.verifyLessonBelongsToCourse(
+    lessonId,
+    courseId,
+  );
+
+  const data: any = {};
+
+  if (dto.is_completed !== undefined) {
+    data.is_completed = dto.is_completed;
+  }
+
+  if (
+    dto.current_time_secs !== undefined
+  ) {
+    data.current_time_secs =
+      dto.current_time_secs;
+  }
+
+  if (
+    dto.watch_percentage !== undefined
+  ) {
+    data.watch_percentage =
+      dto.watch_percentage;
+  }
+
+  if (
+    dto.time_spent_secs !== undefined
+  ) {
+    data.time_spent_secs =
+      dto.time_spent_secs;
+  }
+
+  if (
+    dto.last_watched_at !== undefined
+  ) {
+    data.last_watched_at =
+      new Date(dto.last_watched_at);
+  }
+
+  const updated =
+    await this.prisma.lesson_progress.update({
+      where: {
+        id,
+      },
+      data,
+    });
+
+  // =========================
+  // RECORD STREAK ACTIVITY
+  // =========================
+
+  // Only record activity when the lesson
+  // changes from incomplete -> completed.
+  const newlyCompleted =
+    existing.is_completed === false &&
+    dto.is_completed === true;
+
+  if (newlyCompleted) {
+    await this.streaksService.recordActivity(userId);
+  }
+
+  return updated;
+}
 
   // =========================
   // DELETE PROGRESS
