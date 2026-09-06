@@ -183,69 +183,69 @@ export class LessonProgressService {
   // CREATE PROGRESS
   // =========================
 
-  async create(
-    userId: string,
-    dto: CreateLessonProgressDto,
-  ) {
-    const courseId = BigInt(dto.course_id);
-    const lessonId = BigInt(dto.lesson_id);
+async create(
+  userId: string,
+  dto: CreateLessonProgressDto,
+) {
+  const courseId = BigInt(dto.course_id);
+  const lessonId = BigInt(dto.lesson_id);
 
-    await this.verifyEnrollment(
-      userId,
-      courseId,
-    );
+  await this.verifyEnrollment(
+    userId,
+    courseId,
+  );
 
-    await this.verifyLessonBelongsToCourse(
-      lessonId,
-      courseId,
-    );
+  await this.verifyLessonBelongsToCourse(
+    lessonId,
+    courseId,
+  );
 
-    const existing =
-      await this.prisma.lesson_progress.findUnique({
-        where: {
-          user_id_course_id_lesson_id: {
-            user_id: userId,
-            course_id: courseId,
-            lesson_id: lessonId,
-          },
-        },
-      });
-
-    if (existing) {
-      throw new ConflictException(
-        'Lesson progress already exists',
-      );
-    }
-
-    const progress =
-      await this.prisma.lesson_progress.create({
-        data: {
+  const existing =
+    await this.prisma.lesson_progress.findUnique({
+      where: {
+        user_id_course_id_lesson_id: {
           user_id: userId,
           course_id: courseId,
           lesson_id: lessonId,
-          is_completed:
-            dto.is_completed ?? false,
-          current_time_secs:
-            dto.current_time_secs ?? 0,
-          watch_percentage:
-            dto.watch_percentage ?? 0,
-          time_spent_secs:
-            dto.time_spent_secs ?? 0,
-          last_watched_at:
-            dto.last_watched_at
-              ? new Date(dto.last_watched_at)
-              : undefined,
         },
-      });
+      },
+    });
 
-    // Record learning activity only when
-    // the lesson is created as completed.
-    if (progress.is_completed) {
-      await this.streaksService.recordActivity(userId);
-    }
-
-    return progress;
+  if (existing) {
+    throw new ConflictException(
+      'Lesson progress already exists',
+    );
   }
+
+  const progress =
+    await this.prisma.lesson_progress.create({
+      data: {
+        user_id: userId,
+        course_id: courseId,
+        lesson_id: lessonId,
+        is_completed:
+          dto.is_completed ?? false,
+        current_time_secs:
+          dto.current_time_secs ?? 0,
+        watch_percentage:
+          dto.watch_percentage ?? 0,
+        time_spent_secs:
+          dto.time_spent_secs ?? 0,
+        last_watched_at:
+          dto.last_watched_at
+            ? new Date(dto.last_watched_at)
+            : undefined,
+      },
+    });
+
+  // Record learning activity only when the lesson
+  // is completed.
+  if (dto.is_completed === true) {
+    await this.streaksService.recordActivity(userId);
+  }
+
+  return progress;
+}
 
   // =========================
   // UPDATE PROGRESS
