@@ -40,6 +40,7 @@ import { PushTokensModule } from './push-tokens/push-tokens.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { SecurityLogsModule } from './security-logs/security-logs.module';
 import { StreaksModule } from './streaks/streaks.module';
+import { LeaderboardModule } from './leaderboard/leaderboard.module';
 
 @Module({
   imports: [
@@ -88,6 +89,7 @@ import { StreaksModule } from './streaks/streaks.module';
     FeedbackModule,
     SecurityLogsModule,
     StreaksModule,
+    LeaderboardModule,
   ],
   controllers: [AppController],
   providers: [
