@@ -36,6 +36,7 @@ import { ReviewRepliesModule } from './review-replies/review-replies.module';
 import { CouponUsageModule } from './coupon-usage/coupon-usage.module';
 import { ShippingAddressesModule } from './shipping-addresses/shipping-addresses.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { PushTokensModule } from './push-tokens/push-tokens.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     CouponUsageModule,
     ShippingAddressesModule,
     WishlistModule,
+    PushTokensModule,
   ],
   controllers: [AppController],
   providers: [
