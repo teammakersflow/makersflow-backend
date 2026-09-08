@@ -851,3 +851,40 @@ model wishlist {
   @@unique([user_id, product_id], map: "wishlist_user_product_unique")
   @@schema("public")
 }
+
+model challenge_registrations {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name        String
+  age              Int?
+  email            String
+  phone            String
+  institution      String
+  class_year       String?
+  city             String?
+  project_category String?
+  motivation       String?
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([email])
+  @@schema("public")
+}
+
+model challenge_submissions {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  full_name       String
+  age             Int?
+  institution     String?
+  kit_name        String?
+  project_title   String
+  description     String
+  problem_solved  String?
+  inspiration     String?
+  video_url       String?
+  image_urls      String[] @default([])
+  feature_consent Boolean  @default(false)
+  status          String   @default("submitted")
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at(sort: Desc)])
+  @@schema("public")
+}
