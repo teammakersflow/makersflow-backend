@@ -41,6 +41,7 @@ import { FeedbackModule } from './feedback/feedback.module';
 import { SecurityLogsModule } from './security-logs/security-logs.module';
 import { StreaksModule } from './streaks/streaks.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     SecurityLogsModule,
     StreaksModule,
     LeaderboardModule,
+    WaitlistModule,
   ],
   controllers: [AppController],
   providers: [
