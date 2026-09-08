@@ -29,11 +29,15 @@ export class CouponsController {
     private readonly couponsService: CouponsService,
   ) {}
 
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
   @Post()
   create(@Body() createCouponDto: CreateCouponDto) {
     return this.couponsService.create(createCouponDto);
   }
 
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
   @Get()
   findAll() {
     return this.couponsService.findAll();
@@ -52,11 +56,16 @@ validate(
     dto,
   );
 }
+
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.couponsService.findOne(id);
   }
 
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -68,6 +77,8 @@ validate(
     );
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.couponsService.remove(id);
