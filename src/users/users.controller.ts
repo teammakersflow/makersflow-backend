@@ -10,6 +10,7 @@ import { UpdateBanStatusDto } from './dto/update-ban-status.dto';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -32,6 +33,16 @@ export class UsersController {
     summary: 'Get all users',
     description: 'Returns all users from the profiles table.',
   })
+
+@Delete('me')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@ApiOperation({
+  summary: 'Delete current user account',
+})
+deleteAccount(@CurrentUser() user: AuthenticatedUser) {
+  return this.usersService.deleteAccount(user.id);
+}
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
