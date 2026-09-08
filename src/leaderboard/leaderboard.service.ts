@@ -33,7 +33,10 @@ export class LeaderboardService {
       },
     });
 
-    const profileMap = new Map(
+    const profileMap = new Map<
+      string,
+      (typeof profiles)[number]
+    >(
       profiles.map((profile) => [profile.id, profile]),
     );
 
