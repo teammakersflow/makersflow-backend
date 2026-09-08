@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -103,6 +104,52 @@ export class StorageService {
       uploadUrl,
       key,
       publicUrl,
+    };
+  }
+
+  async createSignedPlaybackUrl(videoUrl: string) {
+    const s3 = this.getClient();
+
+    const bucket =
+      this.configService.get<string>('AWS_S3_BUCKET')!;
+
+    const region =
+      this.configService.get<string>('AWS_REGION')!;
+
+    let key: string;
+
+    try {
+      const url = new URL(videoUrl);
+
+      const expectedHost = `${bucket}.s3.${region}.amazonaws.com`;
+
+      if (url.hostname !== expectedHost) {
+        throw new Error('Invalid video storage URL');
+      }
+
+      key = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
+
+      if (!key) {
+        throw new Error('Invalid video storage key');
+      }
+    } catch {
+      throw new ServiceUnavailableException(
+        'Invalid video storage URL',
+      );
+    }
+
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    const signedUrl = await getSignedUrl(s3, command, {
+      expiresIn: 300,
+    });
+
+    return {
+      signedUrl,
+      expiresIn: 300,
     };
   }
 

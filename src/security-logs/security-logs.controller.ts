@@ -10,8 +10,10 @@ import { SecurityLogsService } from './security-logs.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users/me/security-logs')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class SecurityLogsController {
   constructor(

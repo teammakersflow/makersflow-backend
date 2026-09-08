@@ -9,16 +9,14 @@ import {
 } from '@nestjs/common';
 
 import { PushTokensService } from './push-tokens.service';
-
 import { CreatePushTokenDto } from './dto/create-push-token.dto';
-
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 @Controller('push-tokens')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class PushTokensController {
   constructor(

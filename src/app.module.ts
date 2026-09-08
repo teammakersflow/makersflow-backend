@@ -36,11 +36,14 @@ import { ReviewRepliesModule } from './review-replies/review-replies.module';
 import { CouponUsageModule } from './coupon-usage/coupon-usage.module';
 import { ShippingAddressesModule } from './shipping-addresses/shipping-addresses.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { CourseFavoritesModule } from './course-favorites/course-favorites.module';
+import { WatchLaterModule } from './watch-later/watch-later.module';
 import { PushTokensModule } from './push-tokens/push-tokens.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { SecurityLogsModule } from './security-logs/security-logs.module';
 import { StreaksModule } from './streaks/streaks.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
 
 @Module({
   imports: [
@@ -85,11 +88,14 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     CouponUsageModule,
     ShippingAddressesModule,
     WishlistModule,
+    CourseFavoritesModule,
+    WatchLaterModule,
     PushTokensModule,
     FeedbackModule,
     SecurityLogsModule,
     StreaksModule,
     LeaderboardModule,
+    ShippingRatesModule,
   ],
   controllers: [AppController],
   providers: [

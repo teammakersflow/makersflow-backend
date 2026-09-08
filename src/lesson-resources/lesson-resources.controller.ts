@@ -18,7 +18,9 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { ApiBearerAuth } from '@nestjs/swagger';
 @Controller('lesson-resources')
+@ApiBearerAuth()
 export class LessonResourcesController {
   constructor(
     private readonly lessonResourcesService: LessonResourcesService,
