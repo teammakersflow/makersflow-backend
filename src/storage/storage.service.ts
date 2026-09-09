@@ -75,14 +75,15 @@ export class StorageService {
   async createUploadUrl(
     fileName: string,
     contentType: string,
-    folder: 
-      | 'courses' 
-      | 'products' 
-      | 'uploads' 
-      | 'lessons' 
-      | 'resources' 
-      | 'news' 
-      | 'avatars',
+    folder:
+  | 'courses'
+  | 'products'
+  | 'uploads'
+  | 'lessons'
+  | 'resources'
+  | 'news'
+  | 'avatars'
+  | 'challenges',
   ) {
     const s3 = this.getClient();
     const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
@@ -152,6 +153,16 @@ export class StorageService {
       expiresIn: 300,
     };
   }
+  async createChallengeUploadUrl(
+  fileName: string,
+  contentType: string,
+) {
+  return this.createUploadUrl(
+    fileName,
+    contentType,
+    'challenges',
+  );
+}
 
   async deleteObject(key: string) {
     const s3 = this.getClient();
