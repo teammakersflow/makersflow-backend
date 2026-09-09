@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
+
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
@@ -14,31 +15,18 @@ export class ShippingRatesService {
   ) {}
 
   async getRates(dto: ShippingRateDto) {
-    const email =
-      this.configService.get<string>('SHIPROCKET_EMAIL');
+    const token =
+      this.configService.get<string>(
+        'SHIPROCKET_API_TOKEN',
+      );
 
-    const password =
-      this.configService.get<string>('SHIPROCKET_PASSWORD');
-
-    if (!email || !password) {
+    if (!token) {
       throw new InternalServerErrorException(
-        'Shiprocket configuration is missing',
+        'Shiprocket API token is missing',
       );
     }
 
     try {
-      // Login to Shiprocket
-      const loginResponse = await axios.post(
-        'https://apiv2.shiprocket.in/v1/external/auth/login',
-        {
-          email,
-          password,
-        },
-      );
-
-      const token = loginResponse.data.token;
-
-      // Get available courier/rate options
       const response = await axios.get(
         'https://apiv2.shiprocket.in/v1/external/courier/serviceability/',
         {
@@ -58,15 +46,29 @@ export class ShippingRatesService {
         success: true,
         data: response.data,
       };
-    } catch (error) {
-      console.error(
-        '[SHIPROCKET] Failed to fetch shipping rates:',
-        error,
-      );
+    } catch (error: any) {
+          console.error(
+            '[SHIPROCKET] Status:',
+            error.response?.status,
+          );
+
+          console.error(
+            '[SHIPROCKET] Response:',
+            error.response?.data,
+          );
+
+          console.error(
+            '[SHIPROCKET] Message:',
+            error.message,
+          );
+
+          throw new InternalServerErrorException(
+            'Unable to fetch shipping rates',
+          );
+        }
 
       throw new InternalServerErrorException(
         'Unable to fetch shipping rates',
       );
     }
-  }
 }
