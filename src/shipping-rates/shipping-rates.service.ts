@@ -15,18 +15,39 @@ export class ShippingRatesService {
   ) {}
 
   async getRates(dto: ShippingRateDto) {
-    const token =
+    const email =
+      this.configService.get<string>('SHIPROCKET_EMAIL');
+
+    const password =
       this.configService.get<string>(
-        'SHIPROCKET_API_TOKEN',
+        'SHIPROCKET_PASSWORD',
       );
 
-    if (!token) {
+    if (!email || !password) {
       throw new InternalServerErrorException(
-        'Shiprocket API token is missing',
+        'Shiprocket configuration is missing',
       );
     }
 
     try {
+      // 1. Generate a fresh Shiprocket API token
+      const loginResponse = await axios.post(
+        'https://apiv2.shiprocket.in/v1/external/auth/login',
+        {
+          email,
+          password,
+        },
+      );
+
+      const token = loginResponse.data.token;
+
+      if (!token) {
+        throw new Error(
+          'Shiprocket authentication did not return a token',
+        );
+      }
+
+      // 2. Get available courier/rate options
       const response = await axios.get(
         'https://apiv2.shiprocket.in/v1/external/courier/serviceability/',
         {
@@ -47,28 +68,24 @@ export class ShippingRatesService {
         data: response.data,
       };
     } catch (error: any) {
-          console.error(
-            '[SHIPROCKET] Status:',
-            error.response?.status,
-          );
+      console.error(
+        '[SHIPROCKET] Status:',
+        error.response?.status,
+      );
 
-          console.error(
-            '[SHIPROCKET] Response:',
-            error.response?.data,
-          );
+      console.error(
+        '[SHIPROCKET] Response:',
+        error.response?.data,
+      );
 
-          console.error(
-            '[SHIPROCKET] Message:',
-            error.message,
-          );
-
-          throw new InternalServerErrorException(
-            'Unable to fetch shipping rates',
-          );
-        }
+      console.error(
+        '[SHIPROCKET] Message:',
+        error.message,
+      );
 
       throw new InternalServerErrorException(
         'Unable to fetch shipping rates',
       );
     }
+  }
 }

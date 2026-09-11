@@ -43,6 +43,7 @@ import { FeedbackModule } from './feedback/feedback.module';
 import { SecurityLogsModule } from './security-logs/security-logs.module';
 import { StreaksModule } from './streaks/streaks.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
     SecurityLogsModule,
     StreaksModule,
     LeaderboardModule,
+    ShippingRatesModule,
   ],
   controllers: [AppController],
   providers: [
