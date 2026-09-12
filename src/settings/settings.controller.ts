@@ -57,7 +57,7 @@ export class SettingsController {
 
     @Get('me')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('student')
+    @Roles('student', 'admin')
     getMySettings(@CurrentUser() currentUser: { id: string }) {
       return this.settingsService.getMySettings(currentUser.id);
     }
