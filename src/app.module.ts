@@ -44,6 +44,7 @@ import { SecurityLogsModule } from './security-logs/security-logs.module';
 import { StreaksModule } from './streaks/streaks.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
+import { ChallengesModule } from './challenges/challenges.module';
 
 @Module({
   imports: [
@@ -96,6 +97,7 @@ import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
     StreaksModule,
     LeaderboardModule,
     ShippingRatesModule,
+    ChallengesModule,
   ],
   controllers: [AppController],
   providers: [
