@@ -17,6 +17,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('settings')
 @ApiBearerAuth()
@@ -53,6 +54,13 @@ export class SettingsController {
   upsertExplicit(@Body() createSettingDto: CreateSettingDto) {
     return this.settingsService.upsert(createSettingDto);
   }
+
+    @Get('me')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('student')
+    getMySettings(@CurrentUser() currentUser: { id: string }) {
+      return this.settingsService.getMySettings(currentUser.id);
+    }
 
   // Public/read route — leave unguarded
   @Get(':key')
