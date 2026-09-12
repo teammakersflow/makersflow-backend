@@ -1,9 +1,4 @@
-import {
-  IsNumber,
-  IsOptional,
-  IsString,
-  Min,
-} from 'class-validator';
+import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateRazorpayOrderDto {
   @IsNumber()
@@ -17,4 +12,16 @@ export class CreateRazorpayOrderDto {
   @IsOptional()
   @IsString()
   receipt?: string;
+
+  @IsOptional()
+  @IsObject()
+  items?: Record<string, any>;
+
+  @IsOptional()
+  @IsObject()
+  shipping_address?: Record<string, any>;
+
+  @IsOptional()
+  @IsString()
+  order_type?: string;
 }

@@ -76,14 +76,14 @@ export class StorageService {
     fileName: string,
     contentType: string,
     folder:
-  | 'courses'
-  | 'products'
-  | 'uploads'
-  | 'lessons'
-  | 'resources'
-  | 'news'
-  | 'avatars'
-  | 'challenges',
+      | 'courses'
+      | 'products'
+      | 'uploads'
+      | 'lessons'
+      | 'resources'
+      | 'news'
+      | 'avatars'
+      | 'challenges',
   ) {
     const s3 = this.getClient();
     const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
@@ -98,8 +98,7 @@ export class StorageService {
       expiresIn: 300,
     });
 
-    const publicUrl =
-      `https://${bucket}.s3.${this.configService.get<string>('AWS_REGION')}.amazonaws.com/${key}`;
+    const publicUrl = `https://${bucket}.s3.${this.configService.get<string>('AWS_REGION')}.amazonaws.com/${key}`;
 
     return {
       uploadUrl,
@@ -108,14 +107,52 @@ export class StorageService {
     };
   }
 
+  async uploadPdf(fileName: string, pdfBuffer: Buffer) {
+    const s3 = this.getClient();
+
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
+
+    const region = this.configService.get<string>('AWS_REGION')!;
+
+    const key = `invoices/${randomUUID()}-${fileName}`;
+
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: pdfBuffer,
+        ContentType: 'application/pdf',
+        ContentDisposition: `attachment; filename="${fileName}"`,
+      }),
+    );
+
+        const downloadCommand = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ResponseContentType: 'application/pdf',
+      ResponseContentDisposition: `attachment; filename="${fileName}"`,
+    });
+
+    const downloadUrl = await getSignedUrl(
+      s3,
+      downloadCommand,
+      {
+        expiresIn: 3600,
+      },
+    );
+
+    return {
+      key,
+      publicUrl: downloadUrl,
+    };
+  }
+
   async createSignedPlaybackUrl(videoUrl: string) {
     const s3 = this.getClient();
 
-    const bucket =
-      this.configService.get<string>('AWS_S3_BUCKET')!;
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
 
-    const region =
-      this.configService.get<string>('AWS_REGION')!;
+    const region = this.configService.get<string>('AWS_REGION')!;
 
     let key: string;
 
@@ -134,9 +171,7 @@ export class StorageService {
         throw new Error('Invalid video storage key');
       }
     } catch {
-      throw new ServiceUnavailableException(
-        'Invalid video storage URL',
-      );
+      throw new ServiceUnavailableException('Invalid video storage URL');
     }
 
     const command = new GetObjectCommand({
@@ -153,22 +188,14 @@ export class StorageService {
       expiresIn: 300,
     };
   }
-  async createChallengeUploadUrl(
-  fileName: string,
-  contentType: string,
-) {
-  return this.createUploadUrl(
-    fileName,
-    contentType,
-    'challenges',
-  );
-}
+  async createChallengeUploadUrl(fileName: string, contentType: string) {
+    return this.createUploadUrl(fileName, contentType, 'challenges');
+  }
 
   async deleteObject(key: string) {
     const s3 = this.getClient();
 
-    const bucket =
-      this.configService.get<string>('AWS_S3_BUCKET')!;
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
 
     await s3.send(
       new DeleteObjectCommand({
