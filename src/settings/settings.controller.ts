@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UpdateMySettingsDto } from './dto/update-my-settings.dto';
 
 @Controller('settings')
 @ApiBearerAuth()
@@ -67,6 +68,19 @@ export class SettingsController {
   findOne(@Param('key') key: string) {
     return this.settingsService.findOne(key);
   }
+
+  @Patch('me')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('student', 'admin')
+updateMySettings(
+  @CurrentUser() currentUser: { id: string },
+  @Body() updateMySettingsDto: UpdateMySettingsDto,
+) {
+  return this.settingsService.updateMySettings(
+    currentUser.id,
+    updateMySettingsDto,
+  );
+}
 
   // Admin only
   @Patch(':key')

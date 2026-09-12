@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdateMySettingsDto } from './dto/update-my-settings.dto';
 
 @Injectable()
 export class SettingsService {
@@ -12,6 +13,38 @@ export class SettingsService {
     where: {
       id: userId,
     },
+    select: {
+      id: true,
+      email: true,
+      full_name: true,
+      grade: true,
+      school: true,
+      avatar_url: true,
+      notifications_enabled: true,
+      onboarding_completed: true,
+    },
+  });
+}
+
+async updateMySettings(
+  userId: string,
+  updateMySettingsDto: UpdateMySettingsDto,
+) {
+  const user = await this.prisma.public_users.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    throw new NotFoundException('User not found');
+  }
+
+  return this.prisma.public_users.update({
+    where: {
+      id: userId,
+    },
+    data: updateMySettingsDto,
     select: {
       id: true,
       email: true,
