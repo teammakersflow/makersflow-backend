@@ -4,10 +4,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { QuizAttemptsService } from './quiz-attempts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+
+import { QuizAttemptsService } from './quiz-attempts.service';
 
 @Controller('quiz-attempts')
 @UseGuards(JwtAuthGuard)
@@ -17,7 +18,9 @@ export class QuizAttemptsController {
   ) {}
 
   @Get('me')
-  getMyAttempts(@CurrentUser() user: AuthenticatedUser) {
-    return this.quizAttemptsService.getMyAttempts(user.id);
+  findMyAttempts(
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.quizAttemptsService.findAll(user.id);
   }
 }

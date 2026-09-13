@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class QuizAttemptsService {
   constructor(private prisma: PrismaService) {}
 
-  async getMyAttempts(userId: string) {
+  findAll(userId: string) {
     return this.prisma.quiz_attempts.findMany({
       where: {
         user_id: userId,
@@ -21,20 +21,6 @@ export class QuizAttemptsService {
         score: true,
         answers: true,
         attempted_at: true,
-
-        quizzes: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-
-        lessons: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
       },
     });
   }
