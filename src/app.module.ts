@@ -46,6 +46,7 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { BillingProfileModule } from './billing-profile/billing-profile.module';
+import { QuizAttemptsModule } from './quiz-attempts/quiz-attempts.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { BillingProfileModule } from './billing-profile/billing-profile.module';
     ShippingRatesModule,
     ChallengesModule,
     BillingProfileModule,
+    QuizAttemptsModule,
   ],
   controllers: [AppController],
   providers: [
