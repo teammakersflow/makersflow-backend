@@ -1,40 +1,36 @@
-import {
-  IsEmail,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-} from 'class-validator';
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class ChallengeRegistrationDto {
   @IsString()
+  @IsNotEmpty()
   full_name!: string;
 
-  @IsOptional()
   @IsInt()
-  @Min(0)
-  age?: number;
+  @Min(1)
+  age!: number;
 
   @IsEmail()
   email!: string;
 
   @IsString()
+  @IsNotEmpty()
   phone!: string;
 
   @IsString()
+  @IsNotEmpty()
   institution!: string;
 
-  @IsOptional()
   @IsString()
-  class_year?: string;
+  @IsNotEmpty()
+  class_year!: string;
 
-  @IsOptional()
   @IsString()
-  city?: string;
+  @IsNotEmpty()
+  city!: string;
 
-  @IsOptional()
   @IsString()
-  project_category?: string;
+  @IsNotEmpty()
+  project_category!: string;
 
   @IsOptional()
   @IsString()

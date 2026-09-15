@@ -1,21 +1,46 @@
-import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsArray,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  Min,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateRazorpayOrderDto {
+  /**
+   * Kept temporarily for frontend compatibility.
+   * The backend must NOT trust this value.
+   */
+  @IsOptional()
   @IsNumber()
-  @Min(1)
-  amount!: number;
+  @Min(0)
+  amount?: number;
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   currency?: string;
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   receipt?: string;
 
+  /**
+   * Example:
+   * [
+   *   { "productId": "1", "quantity": 2 },
+   *   { "productId": "5", "quantity": 1 }
+   * ]
+   */
   @IsOptional()
-  @IsObject()
-  items?: Record<string, any>;
+  @IsArray()
+  items?: Array<{
+    productId: string | number;
+    quantity: number;
+  }>;
 
   @IsOptional()
   @IsObject()

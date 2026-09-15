@@ -107,7 +107,10 @@ export class LessonsService {
       where: {
         id: lessonId,
       },
-      include: {
+      select: {
+        id: true,
+        is_preview: true,
+        video_url: true,
         modules: {
           select: {
             course_id: true,
@@ -120,7 +123,13 @@ export class LessonsService {
       throw new NotFoundException('Lesson not found');
     }
 
-    // Preview lessons can be watched without enrollment.
+    if (!lesson.modules?.course_id) {
+      throw new NotFoundException(
+        'Course not found for this lesson',
+      );
+    }
+
+    // Preview lessons are available without enrollment.
     if (!lesson.is_preview) {
       const enrollment =
         await this.enrollmentsService.findMyEnrollment(

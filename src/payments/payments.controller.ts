@@ -1,128 +1,105 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
-  UseGuards,
-  Query,
+  Post,
   Req,
-
+  Res,
+  NotFoundException,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { PaymentsService } from './payments.service';
-
-import { CreatePaymentDto } from './dto/create-payment.dto';
-
-import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+
+import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-import { RolesGuard } from '../auth/guards/roles.guard';
-
-import { Roles } from '../auth/decorators/roles.decorator';
-
-@Controller('payments')
+@ApiTags('Payments')
 @ApiBearerAuth()
+@Controller('payments')
+@UseGuards(JwtAuthGuard)
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
+    private readonly storageService: StorageService,
   ) {}
 
-  // ─────────────────────────────────────────────
-  // RAZORPAY CREATE ORDER
-  // ─────────────────────────────────────────────
-
+  /**
+   * Create Razorpay order
+   */
   @Post('create-order')
-  @UseGuards(JwtAuthGuard)
-  createRazorpayOrder(
+  async createRazorpayOrder(
     @Req() req: Request,
     @Body() dto: CreateRazorpayOrderDto,
   ) {
-    const user = req.user as any;
+    const userId = (req as any).user?.id;
 
-    return this.paymentsService.createRazorpayOrder(
-      user.id,
-      dto,
-    );
+    if (!userId) {
+      throw new UnauthorizedException(
+        'User is not authenticated. Please login first.',
+      );
+    }
+
+    return this.paymentsService.createRazorpayOrder(userId, dto);
   }
 
-  // ─────────────────────────────────────────────
-  // RAZORPAY VERIFY
-  // ─────────────────────────────────────────────
-
+  /**
+   * Verify Razorpay payment
+   */
   @Post('verify')
-  @UseGuards(JwtAuthGuard)
-  verifyPayment(
+  async verifyPayment(
     @Req() req: Request,
     @Body() dto: VerifyPaymentDto,
   ) {
-    const user = req.user as any;
+    const userId = (req as any).user?.id;
 
-    return this.paymentsService.verifyPayment(
-      user.id,
-      dto,
-    );
+    if (!userId) {
+      throw new UnauthorizedException(
+        'User is not authenticated. Please login first.',
+      );
+    }
+
+    return this.paymentsService.verifyPayment(userId, dto);
   }
 
-  // ─────────────────────────────────────────────
-  // ADMIN CRUD
-  // ─────────────────────────────────────────────
-
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  create(
-    @Body() createPaymentDto: CreatePaymentDto,
+  /**
+   * Download user's invoice
+   */
+  @Get('invoice/:invoiceId')
+  async downloadInvoice(
+    @Req() req: Request,
+    @Param('invoiceId') invoiceId: string,
+    @Res() res: Response,
   ) {
-    return this.paymentsService.create(
-      createPaymentDto,
-    );
-  }
+    const userId = (req as any).user?.id;
 
-  @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  findAll(@Query('include') include?: string) {
-    const includeUser =
-      include
-        ?.split(',')
-        .map((item) => item.trim())
-        .includes('user') ?? false;
+    if (!userId) {
+      throw new UnauthorizedException(
+        'User is not authenticated. Please login first.',
+      );
+    }
 
-    return this.paymentsService.findAll(includeUser);
-  }
+    const invoice =
+      await this.paymentsService.getInvoiceById(invoiceId, userId);
 
-  @Get(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findOne(id);
-  }
+    if (!invoice || !invoice.invoice_key) {
+      throw new NotFoundException('Invoice not found');
+    }
 
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  update(
-    @Param('id') id: string,
-    @Body() updatePaymentDto: UpdatePaymentDto,
-  ) {
-    return this.paymentsService.update(
-      id,
-      updatePaymentDto,
-    );
-  }
+    const downloadUrl =
+      await this.storageService.getInvoiceDownloadUrl(
+        invoice.invoice_key,
+        `${invoice.invoice_number}.pdf`,
+      );
 
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  remove(@Param('id') id: string) {
-    return this.paymentsService.remove(id);
+    return res.redirect(downloadUrl);
   }
 }

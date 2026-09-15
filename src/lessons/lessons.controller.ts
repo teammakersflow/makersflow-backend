@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -38,12 +39,16 @@ export class LessonsController {
     return this.lessonsService.findAll();
   }
 
-    @Get(':id/video')
+  @Get(':id/video')
   @UseGuards(JwtAuthGuard)
-  getVideoUrl(
+  async getVideoUrl(
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
+    if (!/^\d+$/.test(id)) {
+      throw new BadRequestException('Invalid lesson ID');
+    }
+
     return this.lessonsService.getVideoUrlForStudent(
       BigInt(id),
       user.id,

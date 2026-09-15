@@ -107,6 +107,26 @@ export class StorageService {
     };
   }
 
+  async getInvoiceDownloadUrl(
+    key: string,
+    fileName = 'invoice.pdf',
+  ) {
+    const s3 = this.getClient();
+
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
+
+    const downloadCommand = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ResponseContentType: 'application/pdf',
+      ResponseContentDisposition: `attachment; filename="${fileName}"`,
+    });
+
+    return getSignedUrl(s3, downloadCommand, {
+      expiresIn: 3600,
+    });
+  }
+
   async uploadPdf(fileName: string, pdfBuffer: Buffer) {
     const s3 = this.getClient();
 
@@ -150,28 +170,43 @@ export class StorageService {
   async createSignedPlaybackUrl(videoUrl: string) {
     const s3 = this.getClient();
 
-    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
+    const bucket = this.configService.get<string>(
+      'AWS_S3_BUCKET',
+    );
 
-    const region = this.configService.get<string>('AWS_REGION')!;
+    const region = this.configService.get<string>(
+      'AWS_REGION',
+    );
+
+    if (!bucket || !region) {
+      throw new ServiceUnavailableException(
+        'Storage configuration is missing',
+      );
+    }
 
     let key: string;
 
     try {
       const url = new URL(videoUrl);
 
-      const expectedHost = `${bucket}.s3.${region}.amazonaws.com`;
+      const expectedHost =
+        `${bucket}.s3.${region}.amazonaws.com`;
 
       if (url.hostname !== expectedHost) {
         throw new Error('Invalid video storage URL');
       }
 
-      key = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
+      key = decodeURIComponent(
+        url.pathname.replace(/^\/+/, ''),
+      );
 
       if (!key) {
         throw new Error('Invalid video storage key');
       }
     } catch {
-      throw new ServiceUnavailableException('Invalid video storage URL');
+      throw new ServiceUnavailableException(
+        'Invalid video storage URL',
+      );
     }
 
     const command = new GetObjectCommand({
@@ -179,15 +214,22 @@ export class StorageService {
       Key: key,
     });
 
-    const signedUrl = await getSignedUrl(s3, command, {
-      expiresIn: 300,
-    });
+    const expiresIn = 300;
+
+    const signedUrl = await getSignedUrl(
+      s3,
+      command,
+      {
+        expiresIn,
+      },
+    );
 
     return {
       signedUrl,
-      expiresIn: 300,
+      expiresIn,
     };
   }
+
   async createChallengeUploadUrl(fileName: string, contentType: string) {
     return this.createUploadUrl(fileName, contentType, 'challenges');
   }

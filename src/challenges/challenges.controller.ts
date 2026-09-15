@@ -8,6 +8,9 @@ import { ChallengesService } from './challenges.service';
 import { ChallengeRegistrationDto } from './dto/challenge-registration.dto';
 import { ChallengeSubmissionDto } from './dto/challenge-submission.dto';
 import { CreateChallengeMediaUploadUrlDto } from './dto/create-challenge-media-upload-url.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+
+@ApiBearerAuth()
 
 @Controller('challenges')
 export class ChallengesController {

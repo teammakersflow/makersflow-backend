@@ -2,51 +2,55 @@ import {
   IsArray,
   IsBoolean,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Min,
 } from 'class-validator';
 
 export class ChallengeSubmissionDto {
   @IsString()
+  @IsNotEmpty()
   full_name!: string;
 
-  @IsOptional()
   @IsInt()
-  @Min(0)
-  age?: number;
-
-  @IsOptional()
-  @IsString()
-  institution?: string;
-
-  @IsOptional()
-  @IsString()
-  kit_name?: string;
+  @Min(1)
+  age!: number;
 
   @IsString()
+  @IsNotEmpty()
+  institution!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  kit_name!: string;
+
+  @IsString()
+  @IsNotEmpty()
   project_title!: string;
 
   @IsString()
+  @IsNotEmpty()
   description!: string;
 
-  @IsOptional()
   @IsString()
-  problem_solved?: string;
+  @IsNotEmpty()
+  problem_solved!: string;
 
   @IsOptional()
   @IsString()
   inspiration?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   video_url?: string;
 
-  @IsArray()
-  @IsString({ each: true })
-  image_urls!: string[];
-
-  @IsBoolean()
   @IsOptional()
+  @IsArray()
+  image_urls?: string[];
+
+  @IsOptional()
+  @IsBoolean()
   feature_consent?: boolean;
 }
