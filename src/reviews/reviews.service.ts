@@ -112,6 +112,66 @@ export class ReviewsService {
   // STUDENT COURSE REVIEWS
   // =========================
 
+  async findMyReviews(userId: string) {
+  const [courseReviews, productReviews] =
+    await Promise.all([
+      this.prisma.reviews.findMany({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          id: true,
+          user_id: true,
+          course_id: true,
+          rating: true,
+          comment: true,
+          approved_comment: true,
+          status: true,
+          created_at: true,
+          courses: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+
+      this.prisma.product_reviews.findMany({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          id: true,
+          user_id: true,
+          product_id: true,
+          rating: true,
+          comment: true,
+          approved_comment: true,
+          status: true,
+          created_at: true,
+          products: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+    ]);
+
+  return {
+    course_reviews: courseReviews,
+    product_reviews: productReviews,
+  };
+}
+
   async findCourseReviews(courseId: bigint) {
     const course = await this.prisma.courses.findUnique({
       where: {

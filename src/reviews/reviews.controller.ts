@@ -148,6 +148,14 @@ export class ReviewsController {
     return this.reviewsService.findAll(includes);
   }
 
+  @Get('me')
+@UseGuards(JwtAuthGuard)
+findMyReviews(
+  @CurrentUser() user: AuthenticatedUser,
+) {
+  return this.reviewsService.findMyReviews(user.id);
+}
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reviewsService.findOne(id);

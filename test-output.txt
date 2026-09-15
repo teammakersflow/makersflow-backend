@@ -1,0 +1,2909 @@
+
+> makersflow-backend@0.0.1 test
+> jest --runInBand
+
+FAIL src/lessons/lessons.controller.spec.ts
+  ● LessonsController › should be defined
+
+    Nest can't resolve dependencies of the LessonsService (?, EnrollmentsService, StorageService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [LessonsController],
+      11 |       providers: [LessonsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lessons/lessons.controller.spec.ts:9:35)
+
+FAIL src/auth/auth.controller.spec.ts
+  ● AuthController › should be defined
+
+    Nest can't resolve dependencies of the AuthController (?). Please make sure that the argument AuthService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If AuthService is a provider, is it part of the current RootTestModule?
+    - If AuthService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing AuthService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       controllers: [AuthController],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadController (../node_modules/@nestjs/core/injector/injector.js:99:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:68:13
+          at async Promise.all (index 0)
+      at TestingInstanceLoader.createInstancesOfControllers (../node_modules/@nestjs/core/injector/instance-loader.js:67:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:42:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (auth/auth.controller.spec.ts:8:35)
+
+FAIL src/products/products.controller.spec.ts
+  ● ProductsController › should be defined
+
+    Nest can't resolve dependencies of the ProductsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [ProductsController],
+      11 |       providers: [ProductsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (products/products.controller.spec.ts:9:35)
+
+FAIL src/lesson-resources/lesson-resources.controller.spec.ts
+  ● LessonResourcesController › should be defined
+
+    Nest can't resolve dependencies of the LessonResourcesService (?, EnrollmentsService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [LessonResourcesController],
+      11 |       providers: [LessonResourcesService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lesson-resources/lesson-resources.controller.spec.ts:9:35)
+
+FAIL src/push-tokens/push-tokens.controller.spec.ts
+  ● PushTokensController › should be defined
+
+    Nest can't resolve dependencies of the PushTokensService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [PushTokensController],
+      11 |       providers: [PushTokensService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (push-tokens/push-tokens.controller.spec.ts:9:35)
+
+FAIL src/reviews/reviews.controller.spec.ts
+  ● ReviewsController › should be defined
+
+    Nest can't resolve dependencies of the ReviewsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [ReviewsController],
+      11 |       providers: [ReviewsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (reviews/reviews.controller.spec.ts:9:35)
+
+FAIL src/storage/storage.controller.spec.ts
+  ● StorageController › should be defined
+
+    Nest can't resolve dependencies of the StorageController (?). Please make sure that the argument StorageService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If StorageService is a provider, is it part of the current RootTestModule?
+    - If StorageService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing StorageService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       controllers: [StorageController],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadController (../node_modules/@nestjs/core/injector/injector.js:99:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:68:13
+          at async Promise.all (index 0)
+      at TestingInstanceLoader.createInstancesOfControllers (../node_modules/@nestjs/core/injector/instance-loader.js:67:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:42:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (storage/storage.controller.spec.ts:8:35)
+
+FAIL src/enrollments/enrollments.controller.spec.ts
+  ● EnrollmentsController › should be defined
+
+    Nest can't resolve dependencies of the EnrollmentsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [EnrollmentsController],
+      11 |       providers: [EnrollmentsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (enrollments/enrollments.controller.spec.ts:9:35)
+
+FAIL src/feedback/feedback.controller.spec.ts
+  ● FeedbackController › should be defined
+
+    Nest can't resolve dependencies of the FeedbackService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [FeedbackController],
+      11 |       providers: [FeedbackService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (feedback/feedback.controller.spec.ts:9:35)
+
+FAIL src/auth/auth.service.spec.ts
+  ● AuthService › should be defined
+
+    Nest can't resolve dependencies of the AuthService (?, PrismaService, JwtService). Please make sure that the argument ConfigService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If ConfigService is a provider, is it part of the current RootTestModule?
+    - If ConfigService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing ConfigService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [AuthService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (auth/auth.service.spec.ts:8:35)
+
+FAIL src/security-logs/security-logs.controller.spec.ts
+  ● SecurityLogsController › should be defined
+
+    Nest can't resolve dependencies of the SecurityLogsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [SecurityLogsController],
+      11 |       providers: [SecurityLogsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (security-logs/security-logs.controller.spec.ts:9:35)
+
+FAIL src/feedback/feedback.service.spec.ts
+  ● FeedbackService › should be defined
+
+    Nest can't resolve dependencies of the FeedbackService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [FeedbackService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (feedback/feedback.service.spec.ts:8:35)
+
+FAIL src/products/products.service.spec.ts
+  ● ProductsService › should be defined
+
+    Nest can't resolve dependencies of the ProductsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [ProductsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (products/products.service.spec.ts:8:35)
+
+FAIL src/storage/storage.service.spec.ts
+  ● StorageService › should be defined
+
+    Nest can't resolve dependencies of the StorageService (?). Please make sure that the argument ConfigService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If ConfigService is a provider, is it part of the current RootTestModule?
+    - If ConfigService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing ConfigService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [StorageService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (storage/storage.service.spec.ts:8:35)
+
+FAIL src/lessons/lessons.service.spec.ts
+  ● LessonsService › should be defined
+
+    Nest can't resolve dependencies of the LessonsService (?, EnrollmentsService, StorageService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [LessonsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lessons/lessons.service.spec.ts:8:35)
+
+FAIL src/enrollments/enrollments.service.spec.ts
+  ● EnrollmentsService › should be defined
+
+    Nest can't resolve dependencies of the EnrollmentsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [EnrollmentsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (enrollments/enrollments.service.spec.ts:8:35)
+
+FAIL src/lesson-resources/lesson-resources.service.spec.ts
+  ● LessonResourcesService › should be defined
+
+    Nest can't resolve dependencies of the LessonResourcesService (?, EnrollmentsService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [LessonResourcesService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lesson-resources/lesson-resources.service.spec.ts:8:35)
+
+FAIL src/security-logs/security-logs.service.spec.ts
+  ● SecurityLogsService › should be defined
+
+    Nest can't resolve dependencies of the SecurityLogsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [SecurityLogsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (security-logs/security-logs.service.spec.ts:8:35)
+
+FAIL src/push-tokens/push-tokens.service.spec.ts
+  ● PushTokensService › should be defined
+
+    Nest can't resolve dependencies of the PushTokensService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [PushTokensService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (push-tokens/push-tokens.service.spec.ts:8:35)
+
+FAIL src/reviews/reviews.service.spec.ts
+  ● ReviewsService › should be defined
+
+    Nest can't resolve dependencies of the ReviewsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [ReviewsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (reviews/reviews.service.spec.ts:8:35)
+
+FAIL src/shipping-addresses/shipping-addresses.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'shipping-addresses/shipping-addresses.service.ts'
+
+    Require stack:
+      shipping-addresses/shipping-addresses.service.ts
+      shipping-addresses/shipping-addresses.service.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
+      9 | import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.service.ts:6:1)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.service.spec.ts:2:1)
+
+FAIL src/shipping-addresses/shipping-addresses.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'shipping-addresses/shipping-addresses.service.ts'
+
+    Require stack:
+      shipping-addresses/shipping-addresses.service.ts
+      shipping-addresses/shipping-addresses.controller.ts
+      shipping-addresses/shipping-addresses.controller.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
+      9 | import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.service.ts:6:1)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.controller.ts:16:1)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.controller.spec.ts:2:1)
+
+FAIL src/quiz-questions/quiz-questions.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-questions/quiz-questions.service.ts'
+
+    Require stack:
+      quiz-questions/quiz-questions.service.ts
+      quiz-questions/quiz-questions.service.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { EnrollmentsService } from '../enrollments/enrollments.service';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
+       9 | import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
+      10 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-questions/quiz-questions.service.ts:7:1)
+      at Object.<anonymous> (quiz-questions/quiz-questions.service.spec.ts:2:1)
+
+FAIL src/quiz-questions/quiz-questions.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-questions/quiz-questions.service.ts'
+
+    Require stack:
+      quiz-questions/quiz-questions.service.ts
+      quiz-questions/quiz-questions.controller.ts
+      quiz-questions/quiz-questions.controller.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { EnrollmentsService } from '../enrollments/enrollments.service';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
+       9 | import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
+      10 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-questions/quiz-questions.service.ts:7:1)
+      at Object.<anonymous> (quiz-questions/quiz-questions.controller.ts:13:1)
+      at Object.<anonymous> (quiz-questions/quiz-questions.controller.spec.ts:2:1)
+
+FAIL src/quiz-attempts/quiz-attempts.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-attempts/quiz-attempts.service.ts'
+
+    Require stack:
+      quiz-attempts/quiz-attempts.service.ts
+      quiz-attempts/quiz-attempts.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | @Injectable()
+      6 | export class QuizAttemptsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.service.ts:3:1)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.service.spec.ts:2:1)
+
+FAIL src/quiz-attempts/quiz-attempts.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-attempts/quiz-attempts.service.ts'
+
+    Require stack:
+      quiz-attempts/quiz-attempts.service.ts
+      quiz-attempts/quiz-attempts.controller.ts
+      quiz-attempts/quiz-attempts.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | @Injectable()
+      6 | export class QuizAttemptsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.service.ts:3:1)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.controller.ts:11:1)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.controller.spec.ts:2:1)
+
+FAIL src/promotions/promotions.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promotions/promotions.service.ts'
+
+    Require stack:
+      promotions/promotions.service.ts
+      promotions/promotions.service.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreatePromotionDto } from './dto/create-promotion.dto';
+      9 | import { UpdatePromotionDto } from './dto/update-promotion.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promotions/promotions.service.ts:6:1)
+      at Object.<anonymous> (promotions/promotions.service.spec.ts:2:1)
+
+FAIL src/promotions/promotions.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promotions/promotions.service.ts'
+
+    Require stack:
+      promotions/promotions.service.ts
+      promotions/promotions.controller.ts
+      promotions/promotions.controller.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreatePromotionDto } from './dto/create-promotion.dto';
+      9 | import { UpdatePromotionDto } from './dto/update-promotion.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promotions/promotions.service.ts:6:1)
+      at Object.<anonymous> (promotions/promotions.controller.ts:14:1)
+      at Object.<anonymous> (promotions/promotions.controller.spec.ts:2:1)
+
+FAIL src/promo-codes/promo-codes.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promo-codes/promo-codes.service.ts'
+
+    Require stack:
+      promo-codes/promo-codes.service.ts
+      promo-codes/promo-codes.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreatePromoCodeDto } from './dto/create-promo-code.dto';
+      4 | import { UpdatePromoCodeDto } from './dto/update-promo-code.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promo-codes/promo-codes.service.ts:2:1)
+      at Object.<anonymous> (promo-codes/promo-codes.service.spec.ts:2:1)
+
+FAIL src/promo-codes/promo-codes.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promo-codes/promo-codes.service.ts'
+
+    Require stack:
+      promo-codes/promo-codes.service.ts
+      promo-codes/promo-codes.controller.ts
+      promo-codes/promo-codes.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreatePromoCodeDto } from './dto/create-promo-code.dto';
+      4 | import { UpdatePromoCodeDto } from './dto/update-promo-code.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promo-codes/promo-codes.service.ts:2:1)
+      at Object.<anonymous> (promo-codes/promo-codes.controller.ts:13:1)
+      at Object.<anonymous> (promo-codes/promo-codes.controller.spec.ts:2:1)
+
+FAIL src/payments/payments.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'payments/payments.service.ts'
+
+    Require stack:
+      payments/payments.service.ts
+      payments/payments.service.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { ConfigService } from '@nestjs/config';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreatePaymentDto } from './dto/create-payment.dto';
+       9 | import { UpdatePaymentDto } from './dto/update-payment.dto';
+      10 | import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (payments/payments.service.ts:7:1)
+      at Object.<anonymous> (payments/payments.service.spec.ts:2:1)
+
+FAIL src/payments/payments.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'payments/payments.service.ts'
+
+    Require stack:
+      payments/payments.service.ts
+      payments/payments.controller.ts
+      payments/payments.controller.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { ConfigService } from '@nestjs/config';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreatePaymentDto } from './dto/create-payment.dto';
+       9 | import { UpdatePaymentDto } from './dto/update-payment.dto';
+      10 | import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (payments/payments.service.ts:7:1)
+      at Object.<anonymous> (payments/payments.controller.ts:17:1)
+      at Object.<anonymous> (payments/payments.controller.spec.ts:2:1)
+
+FAIL src/orders/orders.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'orders/orders.service.ts'
+
+    Require stack:
+      orders/orders.service.ts
+      orders/orders.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | import { CreateOrderDto } from './dto/create-order.dto';
+      6 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (orders/orders.service.ts:3:1)
+      at Object.<anonymous> (orders/orders.service.spec.ts:2:1)
+
+FAIL src/orders/orders.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'orders/orders.service.ts'
+
+    Require stack:
+      orders/orders.service.ts
+      orders/orders.controller.ts
+      orders/orders.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | import { CreateOrderDto } from './dto/create-order.dto';
+      6 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (orders/orders.service.ts:3:1)
+      at Object.<anonymous> (orders/orders.controller.ts:14:1)
+      at Object.<anonymous> (orders/orders.controller.spec.ts:2:1)
+
+FAIL src/notifications/notifications.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'notifications/notifications.service.ts'
+
+    Require stack:
+      notifications/notifications.service.ts
+      notifications/notifications.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateNotificationDto } from './dto/create-notification.dto';
+      4 | import { UpdateNotificationDto } from './dto/update-notification.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (notifications/notifications.service.ts:2:1)
+      at Object.<anonymous> (notifications/notifications.service.spec.ts:2:1)
+
+FAIL src/notifications/notifications.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'notifications/notifications.service.ts'
+
+    Require stack:
+      notifications/notifications.service.ts
+      notifications/notifications.controller.ts
+      notifications/notifications.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateNotificationDto } from './dto/create-notification.dto';
+      4 | import { UpdateNotificationDto } from './dto/update-notification.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (notifications/notifications.service.ts:2:1)
+      at Object.<anonymous> (notifications/notifications.controller.ts:15:1)
+      at Object.<anonymous> (notifications/notifications.controller.spec.ts:2:1)
+
+FAIL src/modules/modules.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'modules/modules.service.ts'
+
+    Require stack:
+      modules/modules.service.ts
+      modules/modules.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateModuleDto } from './dto/create-module.dto';
+      4 | import { UpdateModuleDto } from './dto/update-module.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/modules.service.ts:2:1)
+      at Object.<anonymous> (modules/modules.service.spec.ts:2:1)
+
+FAIL src/modules/modules.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'modules/modules.service.ts'
+
+    Require stack:
+      modules/modules.service.ts
+      modules/modules.controller.ts
+      modules/modules.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateModuleDto } from './dto/create-module.dto';
+      4 | import { UpdateModuleDto } from './dto/update-module.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/modules.service.ts:2:1)
+      at Object.<anonymous> (modules/modules.controller.ts:12:1)
+      at Object.<anonymous> (modules/modules.controller.spec.ts:2:1)
+
+FAIL src/course-purchases/course-purchases.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'course-purchases/course-purchases.service.ts'
+
+    Require stack:
+      course-purchases/course-purchases.service.ts
+      course-purchases/course-purchases.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCoursePurchaseDto } from './dto/create-course-purchase.dto';
+      4 | import { UpdateCoursePurchaseDto } from './dto/update-course-purchase.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (course-purchases/course-purchases.service.ts:2:1)
+      at Object.<anonymous> (course-purchases/course-purchases.service.spec.ts:2:1)
+
+FAIL src/course-purchases/course-purchases.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'course-purchases/course-purchases.service.ts'
+
+    Require stack:
+      course-purchases/course-purchases.service.ts
+      course-purchases/course-purchases.controller.ts
+      course-purchases/course-purchases.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCoursePurchaseDto } from './dto/create-course-purchase.dto';
+      4 | import { UpdateCoursePurchaseDto } from './dto/update-course-purchase.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (course-purchases/course-purchases.service.ts:2:1)
+      at Object.<anonymous> (course-purchases/course-purchases.controller.ts:12:1)
+      at Object.<anonymous> (course-purchases/course-purchases.controller.spec.ts:2:1)
+
+FAIL src/courses/courses.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'courses/courses.service.ts'
+
+    Require stack:
+      courses/courses.service.ts
+      courses/courses.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCourseDto } from './dto/create-course.dto';
+      4 | import { UpdateCourseDto } from './dto/update-course.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (courses/courses.service.ts:2:1)
+      at Object.<anonymous> (courses/courses.service.spec.ts:2:1)
+
+FAIL src/courses/courses.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'courses/courses.service.ts'
+
+    Require stack:
+      courses/courses.service.ts
+      courses/courses.controller.ts
+      courses/courses.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCourseDto } from './dto/create-course.dto';
+      4 | import { UpdateCourseDto } from './dto/update-course.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (courses/courses.service.ts:2:1)
+      at Object.<anonymous> (courses/courses.controller.ts:12:1)
+      at Object.<anonymous> (courses/courses.controller.spec.ts:2:1)
+
+FAIL src/categories/categories.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'categories/categories.service.ts'
+
+    Require stack:
+      categories/categories.service.ts
+      categories/categories.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCategoryDto } from './dto/create-category.dto';
+      4 | import { UpdateCategoryDto } from './dto/update-category.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (categories/categories.service.ts:2:1)
+      at Object.<anonymous> (categories/categories.service.spec.ts:2:1)
+
+FAIL src/categories/categories.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'categories/categories.service.ts'
+
+    Require stack:
+      categories/categories.service.ts
+      categories/categories.controller.ts
+      categories/categories.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCategoryDto } from './dto/create-category.dto';
+      4 | import { UpdateCategoryDto } from './dto/update-category.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (categories/categories.service.ts:2:1)
+      at Object.<anonymous> (categories/categories.controller.ts:12:1)
+      at Object.<anonymous> (categories/categories.controller.spec.ts:2:1)
+
+FAIL src/billing-profile/billing-profile.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'billing-profile/billing-profile.service.ts'
+
+    Require stack:
+      billing-profile/billing-profile.service.ts
+      billing-profile/billing-profile.service.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 | import { UpdateBillingProfileDto } from './dto/update-billing-profile.dto';
+      8 |
+      9 | @Injectable()
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (billing-profile/billing-profile.service.ts:6:1)
+      at Object.<anonymous> (billing-profile/billing-profile.service.spec.ts:2:1)
+
+FAIL src/billing-profile/billing-profile.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'billing-profile/billing-profile.service.ts'
+
+    Require stack:
+      billing-profile/billing-profile.service.ts
+      billing-profile/billing-profile.controller.ts
+      billing-profile/billing-profile.controller.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 | import { UpdateBillingProfileDto } from './dto/update-billing-profile.dto';
+      8 |
+      9 | @Injectable()
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (billing-profile/billing-profile.service.ts:6:1)
+      at Object.<anonymous> (billing-profile/billing-profile.controller.ts:9:1)
+      at Object.<anonymous> (billing-profile/billing-profile.controller.spec.ts:2:1)
+
+FAIL src/analytics/analytics.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'analytics/analytics.service.ts'
+
+    Require stack:
+      analytics/analytics.service.ts
+      analytics/analytics.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 |
+      4 | @Injectable()
+      5 | export class AnalyticsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (analytics/analytics.service.ts:2:1)
+      at Object.<anonymous> (analytics/analytics.service.spec.ts:2:1)
+
+FAIL src/analytics/analytics.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'analytics/analytics.service.ts'
+
+    Require stack:
+      analytics/analytics.service.ts
+      analytics/analytics.controller.ts
+      analytics/analytics.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 |
+      4 | @Injectable()
+      5 | export class AnalyticsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (analytics/analytics.service.ts:2:1)
+      at Object.<anonymous> (analytics/analytics.controller.ts:2:1)
+      at Object.<anonymous> (analytics/analytics.controller.spec.ts:2:1)
+
+PASS src/coupons/coupons.controller.spec.ts
+PASS src/certificates/certificates.controller.spec.ts
+PASS src/lesson-progress/lesson-progress.controller.spec.ts
+PASS src/waitlist/waitlist.controller.spec.ts
+PASS src/waitlist/waitlist.service.spec.ts
+PASS src/certificates/certificates.service.spec.ts
+PASS src/streaks/streaks.controller.spec.ts
+PASS src/leaderboard/leaderboard.controller.spec.ts
+PASS src/lesson-progress/lesson-progress.service.spec.ts
+PASS src/leaderboard/leaderboard.service.spec.ts
+PASS src/coupons/coupons.service.spec.ts
+PASS src/app.controller.spec.ts
+PASS src/streaks/streaks.service.spec.ts
+
+Summary of all failing tests
+FAIL lessons/lessons.controller.spec.ts
+  ● LessonsController › should be defined
+
+    Nest can't resolve dependencies of the LessonsService (?, EnrollmentsService, StorageService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [LessonsController],
+      11 |       providers: [LessonsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lessons/lessons.controller.spec.ts:9:35)
+
+FAIL auth/auth.controller.spec.ts
+  ● AuthController › should be defined
+
+    Nest can't resolve dependencies of the AuthController (?). Please make sure that the argument AuthService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If AuthService is a provider, is it part of the current RootTestModule?
+    - If AuthService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing AuthService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       controllers: [AuthController],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadController (../node_modules/@nestjs/core/injector/injector.js:99:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:68:13
+          at async Promise.all (index 0)
+      at TestingInstanceLoader.createInstancesOfControllers (../node_modules/@nestjs/core/injector/instance-loader.js:67:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:42:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (auth/auth.controller.spec.ts:8:35)
+
+FAIL products/products.controller.spec.ts
+  ● ProductsController › should be defined
+
+    Nest can't resolve dependencies of the ProductsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [ProductsController],
+      11 |       providers: [ProductsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (products/products.controller.spec.ts:9:35)
+
+FAIL lesson-resources/lesson-resources.controller.spec.ts
+  ● LessonResourcesController › should be defined
+
+    Nest can't resolve dependencies of the LessonResourcesService (?, EnrollmentsService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [LessonResourcesController],
+      11 |       providers: [LessonResourcesService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lesson-resources/lesson-resources.controller.spec.ts:9:35)
+
+FAIL push-tokens/push-tokens.controller.spec.ts
+  ● PushTokensController › should be defined
+
+    Nest can't resolve dependencies of the PushTokensService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [PushTokensController],
+      11 |       providers: [PushTokensService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (push-tokens/push-tokens.controller.spec.ts:9:35)
+
+FAIL reviews/reviews.controller.spec.ts
+  ● ReviewsController › should be defined
+
+    Nest can't resolve dependencies of the ReviewsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [ReviewsController],
+      11 |       providers: [ReviewsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (reviews/reviews.controller.spec.ts:9:35)
+
+FAIL storage/storage.controller.spec.ts
+  ● StorageController › should be defined
+
+    Nest can't resolve dependencies of the StorageController (?). Please make sure that the argument StorageService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If StorageService is a provider, is it part of the current RootTestModule?
+    - If StorageService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing StorageService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       controllers: [StorageController],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadController (../node_modules/@nestjs/core/injector/injector.js:99:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:68:13
+          at async Promise.all (index 0)
+      at TestingInstanceLoader.createInstancesOfControllers (../node_modules/@nestjs/core/injector/instance-loader.js:67:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:42:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (storage/storage.controller.spec.ts:8:35)
+
+FAIL enrollments/enrollments.controller.spec.ts
+  ● EnrollmentsController › should be defined
+
+    Nest can't resolve dependencies of the EnrollmentsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [EnrollmentsController],
+      11 |       providers: [EnrollmentsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (enrollments/enrollments.controller.spec.ts:9:35)
+
+FAIL feedback/feedback.controller.spec.ts
+  ● FeedbackController › should be defined
+
+    Nest can't resolve dependencies of the FeedbackService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [FeedbackController],
+      11 |       providers: [FeedbackService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (feedback/feedback.controller.spec.ts:9:35)
+
+FAIL auth/auth.service.spec.ts
+  ● AuthService › should be defined
+
+    Nest can't resolve dependencies of the AuthService (?, PrismaService, JwtService). Please make sure that the argument ConfigService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If ConfigService is a provider, is it part of the current RootTestModule?
+    - If ConfigService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing ConfigService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [AuthService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (auth/auth.service.spec.ts:8:35)
+
+FAIL security-logs/security-logs.controller.spec.ts
+  ● SecurityLogsController › should be defined
+
+    Nest can't resolve dependencies of the SecurityLogsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       7 |
+       8 |   beforeEach(async () => {
+    >  9 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+      10 |       controllers: [SecurityLogsController],
+      11 |       providers: [SecurityLogsService],
+      12 |     }).compile();
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (security-logs/security-logs.controller.spec.ts:9:35)
+
+FAIL feedback/feedback.service.spec.ts
+  ● FeedbackService › should be defined
+
+    Nest can't resolve dependencies of the FeedbackService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [FeedbackService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (feedback/feedback.service.spec.ts:8:35)
+
+FAIL products/products.service.spec.ts
+  ● ProductsService › should be defined
+
+    Nest can't resolve dependencies of the ProductsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [ProductsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (products/products.service.spec.ts:8:35)
+
+FAIL storage/storage.service.spec.ts
+  ● StorageService › should be defined
+
+    Nest can't resolve dependencies of the StorageService (?). Please make sure that the argument ConfigService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If ConfigService is a provider, is it part of the current RootTestModule?
+    - If ConfigService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing ConfigService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [StorageService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (storage/storage.service.spec.ts:8:35)
+
+FAIL lessons/lessons.service.spec.ts
+  ● LessonsService › should be defined
+
+    Nest can't resolve dependencies of the LessonsService (?, EnrollmentsService, StorageService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [LessonsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lessons/lessons.service.spec.ts:8:35)
+
+FAIL enrollments/enrollments.service.spec.ts
+  ● EnrollmentsService › should be defined
+
+    Nest can't resolve dependencies of the EnrollmentsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [EnrollmentsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (enrollments/enrollments.service.spec.ts:8:35)
+
+FAIL lesson-resources/lesson-resources.service.spec.ts
+  ● LessonResourcesService › should be defined
+
+    Nest can't resolve dependencies of the LessonResourcesService (?, EnrollmentsService). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [LessonResourcesService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (lesson-resources/lesson-resources.service.spec.ts:8:35)
+
+FAIL security-logs/security-logs.service.spec.ts
+  ● SecurityLogsService › should be defined
+
+    Nest can't resolve dependencies of the SecurityLogsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [SecurityLogsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (security-logs/security-logs.service.spec.ts:8:35)
+
+FAIL push-tokens/push-tokens.service.spec.ts
+  ● PushTokensService › should be defined
+
+    Nest can't resolve dependencies of the PushTokensService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [PushTokensService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (push-tokens/push-tokens.service.spec.ts:8:35)
+
+FAIL reviews/reviews.service.spec.ts
+  ● ReviewsService › should be defined
+
+    Nest can't resolve dependencies of the ReviewsService (?). Please make sure that the argument PrismaService at index [0] is available in the RootTestModule module.
+
+    Potential solutions:
+    - Is RootTestModule a valid NestJS module?
+    - If PrismaService is a provider, is it part of the current RootTestModule?
+    - If PrismaService is exported from a separate @Module, is that module imported within RootTestModule?
+      @Module({
+        imports: [ /* the Module containing PrismaService */ ]
+      })
+
+    For more common dependency resolution issues, see: https://docs.nestjs.com/faq/common-errors
+
+       6 |
+       7 |   beforeEach(async () => {
+    >  8 |     const module: TestingModule = await Test.createTestingModule({
+         |                                   ^
+       9 |       providers: [ReviewsService],
+      10 |     }).compile();
+      11 |
+
+      at TestingInjector.lookupComponentInParentModules (../node_modules/@nestjs/core/injector/injector.js:300:19)
+      at TestingInjector.resolveComponentWrapper (../node_modules/@nestjs/testing/testing-injector.js:19:45)
+      at resolveParam (../node_modules/@nestjs/core/injector/injector.js:150:38)
+          at async Promise.all (index 0)
+      at TestingInjector.resolveConstructorParams (../node_modules/@nestjs/core/injector/injector.js:179:27)
+      at TestingInjector.loadInstance (../node_modules/@nestjs/core/injector/injector.js:77:13)
+      at TestingInjector.loadProvider (../node_modules/@nestjs/core/injector/injector.js:111:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:56:13
+          at async Promise.all (index 3)
+      at TestingInstanceLoader.createInstancesOfProviders (../node_modules/@nestjs/core/injector/instance-loader.js:55:9)
+      at ../node_modules/@nestjs/core/injector/instance-loader.js:40:13
+          at async Promise.all (index 1)
+      at TestingInstanceLoader.createInstances (../node_modules/@nestjs/core/injector/instance-loader.js:39:9)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/core/injector/instance-loader.js:22:13)
+      at TestingInstanceLoader.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-instance-loader.js:9:9)
+      at TestingModuleBuilder.createInstancesOfDependencies (../node_modules/@nestjs/testing/testing-module.builder.js:119:9)
+      at TestingModuleBuilder.compile (../node_modules/@nestjs/testing/testing-module.builder.js:74:9)
+      at Object.<anonymous> (reviews/reviews.service.spec.ts:8:35)
+
+FAIL shipping-addresses/shipping-addresses.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'shipping-addresses/shipping-addresses.service.ts'
+
+    Require stack:
+      shipping-addresses/shipping-addresses.service.ts
+      shipping-addresses/shipping-addresses.service.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
+      9 | import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.service.ts:6:1)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.service.spec.ts:2:1)
+
+FAIL shipping-addresses/shipping-addresses.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'shipping-addresses/shipping-addresses.service.ts'
+
+    Require stack:
+      shipping-addresses/shipping-addresses.service.ts
+      shipping-addresses/shipping-addresses.controller.ts
+      shipping-addresses/shipping-addresses.controller.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreateShippingAddressDto } from './dto/create-shipping-address.dto';
+      9 | import { UpdateShippingAddressDto } from './dto/update-shipping-address.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.service.ts:6:1)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.controller.ts:16:1)
+      at Object.<anonymous> (shipping-addresses/shipping-addresses.controller.spec.ts:2:1)
+
+FAIL quiz-questions/quiz-questions.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-questions/quiz-questions.service.ts'
+
+    Require stack:
+      quiz-questions/quiz-questions.service.ts
+      quiz-questions/quiz-questions.service.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { EnrollmentsService } from '../enrollments/enrollments.service';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
+       9 | import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
+      10 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-questions/quiz-questions.service.ts:7:1)
+      at Object.<anonymous> (quiz-questions/quiz-questions.service.spec.ts:2:1)
+
+FAIL quiz-questions/quiz-questions.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-questions/quiz-questions.service.ts'
+
+    Require stack:
+      quiz-questions/quiz-questions.service.ts
+      quiz-questions/quiz-questions.controller.ts
+      quiz-questions/quiz-questions.controller.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { EnrollmentsService } from '../enrollments/enrollments.service';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
+       9 | import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
+      10 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-questions/quiz-questions.service.ts:7:1)
+      at Object.<anonymous> (quiz-questions/quiz-questions.controller.ts:13:1)
+      at Object.<anonymous> (quiz-questions/quiz-questions.controller.spec.ts:2:1)
+
+FAIL quiz-attempts/quiz-attempts.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-attempts/quiz-attempts.service.ts'
+
+    Require stack:
+      quiz-attempts/quiz-attempts.service.ts
+      quiz-attempts/quiz-attempts.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | @Injectable()
+      6 | export class QuizAttemptsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.service.ts:3:1)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.service.spec.ts:2:1)
+
+FAIL quiz-attempts/quiz-attempts.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'quiz-attempts/quiz-attempts.service.ts'
+
+    Require stack:
+      quiz-attempts/quiz-attempts.service.ts
+      quiz-attempts/quiz-attempts.controller.ts
+      quiz-attempts/quiz-attempts.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | @Injectable()
+      6 | export class QuizAttemptsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.service.ts:3:1)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.controller.ts:11:1)
+      at Object.<anonymous> (quiz-attempts/quiz-attempts.controller.spec.ts:2:1)
+
+FAIL promotions/promotions.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promotions/promotions.service.ts'
+
+    Require stack:
+      promotions/promotions.service.ts
+      promotions/promotions.service.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreatePromotionDto } from './dto/create-promotion.dto';
+      9 | import { UpdatePromotionDto } from './dto/update-promotion.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promotions/promotions.service.ts:6:1)
+      at Object.<anonymous> (promotions/promotions.service.spec.ts:2:1)
+
+FAIL promotions/promotions.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promotions/promotions.service.ts'
+
+    Require stack:
+      promotions/promotions.service.ts
+      promotions/promotions.controller.ts
+      promotions/promotions.controller.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 |
+      8 | import { CreatePromotionDto } from './dto/create-promotion.dto';
+      9 | import { UpdatePromotionDto } from './dto/update-promotion.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promotions/promotions.service.ts:6:1)
+      at Object.<anonymous> (promotions/promotions.controller.ts:14:1)
+      at Object.<anonymous> (promotions/promotions.controller.spec.ts:2:1)
+
+FAIL promo-codes/promo-codes.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promo-codes/promo-codes.service.ts'
+
+    Require stack:
+      promo-codes/promo-codes.service.ts
+      promo-codes/promo-codes.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreatePromoCodeDto } from './dto/create-promo-code.dto';
+      4 | import { UpdatePromoCodeDto } from './dto/update-promo-code.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promo-codes/promo-codes.service.ts:2:1)
+      at Object.<anonymous> (promo-codes/promo-codes.service.spec.ts:2:1)
+
+FAIL promo-codes/promo-codes.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'promo-codes/promo-codes.service.ts'
+
+    Require stack:
+      promo-codes/promo-codes.service.ts
+      promo-codes/promo-codes.controller.ts
+      promo-codes/promo-codes.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreatePromoCodeDto } from './dto/create-promo-code.dto';
+      4 | import { UpdatePromoCodeDto } from './dto/update-promo-code.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (promo-codes/promo-codes.service.ts:2:1)
+      at Object.<anonymous> (promo-codes/promo-codes.controller.ts:13:1)
+      at Object.<anonymous> (promo-codes/promo-codes.controller.spec.ts:2:1)
+
+FAIL payments/payments.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'payments/payments.service.ts'
+
+    Require stack:
+      payments/payments.service.ts
+      payments/payments.service.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { ConfigService } from '@nestjs/config';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreatePaymentDto } from './dto/create-payment.dto';
+       9 | import { UpdatePaymentDto } from './dto/update-payment.dto';
+      10 | import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (payments/payments.service.ts:7:1)
+      at Object.<anonymous> (payments/payments.service.spec.ts:2:1)
+
+FAIL payments/payments.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'payments/payments.service.ts'
+
+    Require stack:
+      payments/payments.service.ts
+      payments/payments.controller.ts
+      payments/payments.controller.spec.ts
+
+       5 | } from '@nestjs/common';
+       6 | import { ConfigService } from '@nestjs/config';
+    >  7 | import { PrismaService } from 'src/prisma/prisma.service';
+         | ^
+       8 | import { CreatePaymentDto } from './dto/create-payment.dto';
+       9 | import { UpdatePaymentDto } from './dto/update-payment.dto';
+      10 | import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (payments/payments.service.ts:7:1)
+      at Object.<anonymous> (payments/payments.controller.ts:17:1)
+      at Object.<anonymous> (payments/payments.controller.spec.ts:2:1)
+
+FAIL orders/orders.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'orders/orders.service.ts'
+
+    Require stack:
+      orders/orders.service.ts
+      orders/orders.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | import { CreateOrderDto } from './dto/create-order.dto';
+      6 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (orders/orders.service.ts:3:1)
+      at Object.<anonymous> (orders/orders.service.spec.ts:2:1)
+
+FAIL orders/orders.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'orders/orders.service.ts'
+
+    Require stack:
+      orders/orders.service.ts
+      orders/orders.controller.ts
+      orders/orders.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+      2 |
+    > 3 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      4 |
+      5 | import { CreateOrderDto } from './dto/create-order.dto';
+      6 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (orders/orders.service.ts:3:1)
+      at Object.<anonymous> (orders/orders.controller.ts:14:1)
+      at Object.<anonymous> (orders/orders.controller.spec.ts:2:1)
+
+FAIL notifications/notifications.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'notifications/notifications.service.ts'
+
+    Require stack:
+      notifications/notifications.service.ts
+      notifications/notifications.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateNotificationDto } from './dto/create-notification.dto';
+      4 | import { UpdateNotificationDto } from './dto/update-notification.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (notifications/notifications.service.ts:2:1)
+      at Object.<anonymous> (notifications/notifications.service.spec.ts:2:1)
+
+FAIL notifications/notifications.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'notifications/notifications.service.ts'
+
+    Require stack:
+      notifications/notifications.service.ts
+      notifications/notifications.controller.ts
+      notifications/notifications.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateNotificationDto } from './dto/create-notification.dto';
+      4 | import { UpdateNotificationDto } from './dto/update-notification.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (notifications/notifications.service.ts:2:1)
+      at Object.<anonymous> (notifications/notifications.controller.ts:15:1)
+      at Object.<anonymous> (notifications/notifications.controller.spec.ts:2:1)
+
+FAIL modules/modules.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'modules/modules.service.ts'
+
+    Require stack:
+      modules/modules.service.ts
+      modules/modules.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateModuleDto } from './dto/create-module.dto';
+      4 | import { UpdateModuleDto } from './dto/update-module.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/modules.service.ts:2:1)
+      at Object.<anonymous> (modules/modules.service.spec.ts:2:1)
+
+FAIL modules/modules.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'modules/modules.service.ts'
+
+    Require stack:
+      modules/modules.service.ts
+      modules/modules.controller.ts
+      modules/modules.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateModuleDto } from './dto/create-module.dto';
+      4 | import { UpdateModuleDto } from './dto/update-module.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/modules.service.ts:2:1)
+      at Object.<anonymous> (modules/modules.controller.ts:12:1)
+      at Object.<anonymous> (modules/modules.controller.spec.ts:2:1)
+
+FAIL course-purchases/course-purchases.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'course-purchases/course-purchases.service.ts'
+
+    Require stack:
+      course-purchases/course-purchases.service.ts
+      course-purchases/course-purchases.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCoursePurchaseDto } from './dto/create-course-purchase.dto';
+      4 | import { UpdateCoursePurchaseDto } from './dto/update-course-purchase.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (course-purchases/course-purchases.service.ts:2:1)
+      at Object.<anonymous> (course-purchases/course-purchases.service.spec.ts:2:1)
+
+FAIL course-purchases/course-purchases.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'course-purchases/course-purchases.service.ts'
+
+    Require stack:
+      course-purchases/course-purchases.service.ts
+      course-purchases/course-purchases.controller.ts
+      course-purchases/course-purchases.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCoursePurchaseDto } from './dto/create-course-purchase.dto';
+      4 | import { UpdateCoursePurchaseDto } from './dto/update-course-purchase.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (course-purchases/course-purchases.service.ts:2:1)
+      at Object.<anonymous> (course-purchases/course-purchases.controller.ts:12:1)
+      at Object.<anonymous> (course-purchases/course-purchases.controller.spec.ts:2:1)
+
+FAIL courses/courses.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'courses/courses.service.ts'
+
+    Require stack:
+      courses/courses.service.ts
+      courses/courses.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCourseDto } from './dto/create-course.dto';
+      4 | import { UpdateCourseDto } from './dto/update-course.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (courses/courses.service.ts:2:1)
+      at Object.<anonymous> (courses/courses.service.spec.ts:2:1)
+
+FAIL courses/courses.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'courses/courses.service.ts'
+
+    Require stack:
+      courses/courses.service.ts
+      courses/courses.controller.ts
+      courses/courses.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCourseDto } from './dto/create-course.dto';
+      4 | import { UpdateCourseDto } from './dto/update-course.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (courses/courses.service.ts:2:1)
+      at Object.<anonymous> (courses/courses.controller.ts:12:1)
+      at Object.<anonymous> (courses/courses.controller.spec.ts:2:1)
+
+FAIL categories/categories.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'categories/categories.service.ts'
+
+    Require stack:
+      categories/categories.service.ts
+      categories/categories.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCategoryDto } from './dto/create-category.dto';
+      4 | import { UpdateCategoryDto } from './dto/update-category.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (categories/categories.service.ts:2:1)
+      at Object.<anonymous> (categories/categories.service.spec.ts:2:1)
+
+FAIL categories/categories.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'categories/categories.service.ts'
+
+    Require stack:
+      categories/categories.service.ts
+      categories/categories.controller.ts
+      categories/categories.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 | import { CreateCategoryDto } from './dto/create-category.dto';
+      4 | import { UpdateCategoryDto } from './dto/update-category.dto';
+      5 |
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (categories/categories.service.ts:2:1)
+      at Object.<anonymous> (categories/categories.controller.ts:12:1)
+      at Object.<anonymous> (categories/categories.controller.spec.ts:2:1)
+
+FAIL billing-profile/billing-profile.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'billing-profile/billing-profile.service.ts'
+
+    Require stack:
+      billing-profile/billing-profile.service.ts
+      billing-profile/billing-profile.service.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 | import { UpdateBillingProfileDto } from './dto/update-billing-profile.dto';
+      8 |
+      9 | @Injectable()
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (billing-profile/billing-profile.service.ts:6:1)
+      at Object.<anonymous> (billing-profile/billing-profile.service.spec.ts:2:1)
+
+FAIL billing-profile/billing-profile.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'billing-profile/billing-profile.service.ts'
+
+    Require stack:
+      billing-profile/billing-profile.service.ts
+      billing-profile/billing-profile.controller.ts
+      billing-profile/billing-profile.controller.spec.ts
+
+      4 | } from '@nestjs/common';
+      5 |
+    > 6 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      7 | import { UpdateBillingProfileDto } from './dto/update-billing-profile.dto';
+      8 |
+      9 | @Injectable()
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (billing-profile/billing-profile.service.ts:6:1)
+      at Object.<anonymous> (billing-profile/billing-profile.controller.ts:9:1)
+      at Object.<anonymous> (billing-profile/billing-profile.controller.spec.ts:2:1)
+
+FAIL analytics/analytics.service.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'analytics/analytics.service.ts'
+
+    Require stack:
+      analytics/analytics.service.ts
+      analytics/analytics.service.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 |
+      4 | @Injectable()
+      5 | export class AnalyticsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (analytics/analytics.service.ts:2:1)
+      at Object.<anonymous> (analytics/analytics.service.spec.ts:2:1)
+
+FAIL analytics/analytics.controller.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module 'src/prisma/prisma.service' from 'analytics/analytics.service.ts'
+
+    Require stack:
+      analytics/analytics.service.ts
+      analytics/analytics.controller.ts
+      analytics/analytics.controller.spec.ts
+
+      1 | import { Injectable } from '@nestjs/common';
+    > 2 | import { PrismaService } from 'src/prisma/prisma.service';
+        | ^
+      3 |
+      4 | @Injectable()
+      5 | export class AnalyticsService {
+
+      at Resolver._throwModNotFoundError (../node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (analytics/analytics.service.ts:2:1)
+      at Object.<anonymous> (analytics/analytics.controller.ts:2:1)
+      at Object.<anonymous> (analytics/analytics.controller.spec.ts:2:1)
+
+
+Test Suites: 48 failed, 13 passed, 61 total
+Tests:       20 failed, 13 passed, 33 total
+Snapshots:   0 total
+Time:        4.877 s
+Ran all test suites.

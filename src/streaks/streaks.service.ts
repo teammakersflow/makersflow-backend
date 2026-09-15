@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StreaksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async recordActivity(userId: string) {
+  async recordActivity(
+    userId: string,
+    prisma: PrismaService | Prisma.TransactionClient = this.prisma,
+  ) {
     console.log('[STREAK] recordActivity() called:', userId);
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    const existing = await this.prisma.streaks.findUnique({
+    const existing = await prisma.streaks.findUnique({
       where: {
         user_id: userId,
       },
@@ -21,7 +25,7 @@ export class StreaksService {
 
     // No streak record yet
     if (!existing) {
-      const created = await this.prisma.streaks.create({
+      const created = await prisma.streaks.create({
         data: {
           user_id: userId,
           current_streak: 1,
@@ -83,7 +87,7 @@ export class StreaksService {
       values: activityLog,
     });
 
-    const updated = await this.prisma.streaks.update({
+    const updated = await prisma.streaks.update({
       where: {
         user_id: userId,
       },
@@ -101,6 +105,7 @@ export class StreaksService {
 
     return updated;
   }
+
   async findMyStreak(userId: string) {
     return this.prisma.streaks.findUnique({
       where: {

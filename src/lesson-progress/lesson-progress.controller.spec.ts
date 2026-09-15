@@ -6,12 +6,26 @@ describe('LessonProgressController', () => {
   let controller: LessonProgressController;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [LessonProgressController],
-      providers: [LessonProgressService],
-    }).compile();
+    const module: TestingModule =
+      await Test.createTestingModule({
+        controllers: [LessonProgressController],
+        providers: [
+          {
+            provide: LessonProgressService,
+            useValue: {
+              findMyProgress: jest.fn(),
+              findMyCourseProgress: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+              remove: jest.fn(),
+            },
+          },
+        ],
+      }).compile();
 
-    controller = module.get<LessonProgressController>(LessonProgressController);
+    controller = module.get<LessonProgressController>(
+      LessonProgressController,
+    );
   });
 
   it('should be defined', () => {
