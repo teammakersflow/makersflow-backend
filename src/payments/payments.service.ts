@@ -12,6 +12,8 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { EnrollmentsService } from '../enrollments/enrollments.service';
+import { ProductsService } from '../products/products.service';
 
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
@@ -26,6 +28,8 @@ export class PaymentsService {
     private prisma: PrismaService,
     private configService: ConfigService,
     private storageService: StorageService,
+    private readonly enrollmentsService: EnrollmentsService,
+    private readonly productsService: ProductsService,
   ) {
     const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
@@ -130,6 +134,7 @@ export class PaymentsService {
         gst_rate: true,
         status: true,
         in_stock: true,
+        is_course: true,
       },
     });
 
@@ -332,14 +337,14 @@ export class PaymentsService {
     }
 
     if (payment.status === 'captured') {
-      const existingOrder = await this.prisma.orders.findFirst({
+      const existingOrder = await this.prisma.orders.findUnique({
         where: {
           payment_id: payment.id,
         },
       });
 
       const existingInvoice = existingOrder
-        ? await this.prisma.invoices.findFirst({
+        ? await this.prisma.invoices.findUnique({
             where: {
               order_id: existingOrder.id,
             },
@@ -362,7 +367,7 @@ export class PaymentsService {
     });
 
     if (existingOrderForPayment) {
-      const existingInvoice = await this.prisma.invoices.findFirst({
+      const existingInvoice = await this.prisma.invoices.findUnique({
         where: {
           order_id: existingOrderForPayment.id,
         },
@@ -488,6 +493,7 @@ export class PaymentsService {
           gst_rate: true,
           status: true,
           in_stock: true,
+          is_course: true,
         },
       });
 
@@ -496,6 +502,7 @@ export class PaymentsService {
           'One or more products could not be found',
         );
       }
+
 
       const productMap = new Map(
         products.map((product) => [
@@ -534,6 +541,12 @@ export class PaymentsService {
         ) {
           throw new BadRequestException(
             `Product "${product.title}" has an invalid price`,
+          );
+        }
+
+        if (!product.in_stock) {
+          throw new BadRequestException(
+            `Product "${product.title}" is out of stock`,
           );
         }
 
@@ -603,9 +616,11 @@ export class PaymentsService {
       const invoiceNumber =
         await this.generateUniqueInvoiceNumber();
 
+      const orderId = crypto.randomUUID();
+
       const pdfBuffer = await this.generateInvoicePdf(
         invoiceNumber,
-        'PENDING_ORDER_ID',
+        orderId,
         new Date(),
         invoiceItems,
         subtotal.toNumber(),
@@ -613,11 +628,17 @@ export class PaymentsService {
         calculatedTotal.toNumber(),
         shippingAddress,
       );
+      let invoiceKey: string | undefined;
 
+      const invoiceFileName = `invoice-${orderId}.pdf`;
+      try {
       const uploadedInvoice = await this.storageService.uploadPdf(
-        `${invoiceNumber}.pdf`,
+        invoiceFileName,
         pdfBuffer,
       );
+
+      const invoiceUrl = uploadedInvoice.publicUrl;
+      invoiceKey = uploadedInvoice.key;
 
       const result = await this.prisma.$transaction(async (tx) => {
     /*
@@ -628,37 +649,23 @@ export class PaymentsService {
     /*
     * Prepare order items with the actual database price.
     */
-    const orderItemRows = normalizedItems.map((item) => {
-    const product = productMap.get(
-      item.product_id.toString(),
-    );
-
-    if (!product) {
-      throw new NotFoundException(
-        `Product not found: ${item.product_id.toString()}`,
+      const orderItemRows = normalizedItems.map((item) => {
+      const product = productMap.get(
+        item.product_id.toString(),
       );
-    }
 
-    return {
-      product_id: item.product_id,
-      quantity: item.quantity,
-      unit_price: product.price!,
-      user_id: userId,
-    };
-  });
+      if (!product) {
+        throw new NotFoundException(
+          `Product not found: ${item.product_id.toString()}`,
+        );
+      }
 
-    /*
-    * Mark payment as captured.
-    */
-    const updatedPayment = await tx.payments.update({
-      where: {
-        id: payment.id,
-      },
-      data: {
-        razorpay_payment_id: dto.razorpay_payment_id,
-        razorpay_signature: dto.razorpay_signature,
-        status: 'captured',
-      },
+      return {
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: product.price!,
+        user_id: userId,
+      };
     });
 
     /*
@@ -666,6 +673,7 @@ export class PaymentsService {
     */
     const order = await tx.orders.create({
       data: {
+        id: orderId,
         user_id: userId,
         payment_id: payment.id,
         razorpay_order_id: dto.razorpay_order_id,
@@ -694,9 +702,8 @@ export class PaymentsService {
         invoice_url: uploadedInvoice.publicUrl,
       },
     });
-
     /*
-    * Create order_items records.
+    * Create order_items records and fulfill each item.
     */
     if (orderItemRows.length > 0) {
       await tx.order_items.createMany({
@@ -708,6 +715,43 @@ export class PaymentsService {
           user_id: item.user_id,
         })),
       });
+
+      /*
+      * Fulfill courses and physical products inside
+      * the same Prisma transaction.
+      */
+      for (const item of orderItemRows) {
+        const product = productMap.get(item.product_id.toString());
+
+        if (!product) {
+          throw new NotFoundException(
+            `Product not found: ${item.product_id.toString()}`,
+          );
+        }
+
+        if (product.is_course === true) {
+          /*
+          * Course fulfillment:
+          * Create the paid enrollment.
+          */
+          await this.enrollmentsService.createPaidEnrollment(
+            userId,
+            item.product_id,
+            dto.razorpay_order_id,
+            tx,
+          );
+        } else {
+          /*
+          * Physical product fulfillment:
+          * Deduct inventory atomically.
+          */
+          await this.productsService.deductStock(
+            item.product_id,
+            item.quantity,
+            tx,
+          );
+        }
+      }
     }
 
     /*
@@ -725,6 +769,20 @@ export class PaymentsService {
       },
     });
 
+    /*
+    * Mark payment as captured only after all fulfillment succeeds.
+    */
+    const updatedPayment = await tx.payments.update({
+      where: {
+        id: payment.id,
+      },
+      data: {
+        razorpay_payment_id: dto.razorpay_payment_id,
+        razorpay_signature: dto.razorpay_signature,
+        status: 'captured',
+      },
+    });
+    
     return {
       updatedPayment,
       order,
@@ -739,6 +797,20 @@ export class PaymentsService {
       order: result.order,
       invoice: result.invoice,
     };
+    } catch (error) {
+      if (invoiceKey) {
+        try {
+          await this.storageService.deleteObject(invoiceKey);
+        } catch (cleanupError) {
+          console.error(
+            'Failed to delete orphaned invoice PDF:',
+            cleanupError,
+          );
+        }
+      }
+
+      throw error;
+    }
   }
 
   private async generateUniqueInvoiceNumber(): Promise<string> {

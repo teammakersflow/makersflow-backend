@@ -221,7 +221,7 @@ model feedback {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model invoices {
   id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  order_id       String    @db.Uuid
+  order_id       String    @unique @db.Uuid
   user_id        String    @db.Uuid
   invoice_number String    @unique
   amount         Decimal   @db.Decimal(10, 2)
@@ -229,7 +229,7 @@ model invoices {
   invoice_url    String?
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
   invoice_key    String?
-  orders         orders    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  orders         orders    @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
   @@index([user_id], map: "idx_invoices_user")
   @@schema("public")
@@ -405,7 +405,7 @@ model orders {
   estimated_delivery  DateTime?          @db.Date
   shipment_status     String?
   course_purchases    course_purchases[]
-  invoices            invoices[]
+  invoices            invoices?
   order_items         order_items[]
   coupons             coupons?           @relation(fields: [coupon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payments            payments?          @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)

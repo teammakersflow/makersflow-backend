@@ -129,11 +129,8 @@ export class StorageService {
 
   async uploadPdf(fileName: string, pdfBuffer: Buffer) {
     const s3 = this.getClient();
-
     const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
-
     const region = this.configService.get<string>('AWS_REGION')!;
-
     const key = `invoices/${randomUUID()}-${fileName}`;
 
     await s3.send(
