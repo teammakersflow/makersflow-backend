@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -85,4 +88,42 @@ async findAll(
       where: { id },
     });
   }
+
+  async deductStock(
+  productId: bigint,
+  quantity: number,
+  tx: any = this.prisma,
+) {
+  if (quantity <= 0) {
+    throw new BadRequestException(
+      'Quantity must be greater than 0',
+    );
+  }
+
+  const result = await tx.products.updateMany({
+    where: {
+      id: productId,
+      stock_quantity: {
+        gte: quantity,
+      },
+    },
+    data: {
+      stock_quantity: {
+        decrement: quantity,
+      },
+    },
+  });
+
+  if (result.count === 0) {
+    throw new BadRequestException(
+      'Insufficient inventory',
+    );
+  }
+
+  return tx.products.findUnique({
+    where: {
+      id: productId,
+    },
+  });
+}
 }
