@@ -8,10 +8,17 @@ describe('LessonResourcesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LessonResourcesController],
-      providers: [LessonResourcesService],
+      providers: [
+        {
+          provide: LessonResourcesService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
-    controller = module.get<LessonResourcesController>(LessonResourcesController);
+    controller = module.get<LessonResourcesController>(
+      LessonResourcesController,
+    );
   });
 
   it('should be defined', () => {

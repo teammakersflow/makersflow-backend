@@ -1,13 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PromotionsController } from './promotions.controller';
-
+import { PrismaService } from '../prisma/prisma.service';
+import { PromotionsService } from './promotions.service';
 describe('PromotionsController', () => {
   let controller: PromotionsController;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [PromotionsController],
-    }).compile();
+const module: TestingModule = await Test.createTestingModule({
+  controllers: [PromotionsController],
+  providers: [
+    {
+      provide: PromotionsService,
+      useValue: {},
+    },
+  ],
+}).compile();
 
     controller = module.get<PromotionsController>(PromotionsController);
   });

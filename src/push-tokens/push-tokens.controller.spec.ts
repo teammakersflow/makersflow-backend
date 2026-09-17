@@ -1,15 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PushTokensController } from './push-tokens.controller';
 import { PushTokensService } from './push-tokens.service';
-
+import { PrismaService } from '../prisma/prisma.service';
 describe('PushTokensController', () => {
   let controller: PushTokensController;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [PushTokensController],
-      providers: [PushTokensService],
-    }).compile();
+const module: TestingModule = await Test.createTestingModule({
+  controllers: [PushTokensController],
+  providers: [
+    PushTokensService,
+    {
+      provide: PrismaService,
+      useValue: {},
+    },
+  ],
+}).compile();
 
     controller = module.get<PushTokensController>(PushTokensController);
   });

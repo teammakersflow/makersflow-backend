@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PromoCodesController } from './promo-codes.controller';
 import { PromoCodesService } from './promo-codes.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 describe('PromoCodesController', () => {
   let controller: PromoCodesController;
@@ -8,7 +9,13 @@ describe('PromoCodesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PromoCodesController],
-      providers: [PromoCodesService],
+      providers: [
+  PromoCodesService,
+  {
+    provide: PrismaService,
+    useValue: {},
+  },
+],
     }).compile();
 
     controller = module.get<PromoCodesController>(PromoCodesController);
