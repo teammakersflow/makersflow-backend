@@ -657,62 +657,35 @@ export class PaymentsService {
           }
 
           const quantity = new Prisma.Decimal(item.quantity);
-
-          if (
-            product.stock_quantity !== null &&
-            product.stock_quantity !== undefined &&
-            quantity.greaterThan(new Prisma.Decimal(product.stock_quantity))
-          ) {
-            throw new BadRequestException(
-              `Insufficient stock for product "${product.title}". Available: ${product.stock_quantity}`,
-            );
-          }
-
           const unitPrice = product.price;
           const gstRate = product.gst_rate || new Prisma.Decimal(0);
 
-          const productWeight = product.weight_kg ?? product.weight;
+          const lineSubtotal = unitPrice
+            .mul(quantity)
+            .toDecimalPlaces(2);
 
-          if (
-            productWeight === null ||
-            productWeight === undefined ||
-            new Prisma.Decimal(productWeight).lessThanOrEqualTo(0)
-          ) {
-            throw new BadRequestException(
-              `Product "${product.title}" has an invalid weight`,
-            );
-          }
+          const lineTax = lineSubtotal
+            .mul(gstRate)
+            .div(100)
+            .toDecimalPlaces(2);
 
-          totalWeightKg = totalWeightKg
-            .plus(new Prisma.Decimal(productWeight).mul(quantity))
-            .toDecimalPlaces(3);
+          subtotal = subtotal
+            .plus(lineSubtotal)
+            .toDecimalPlaces(2);
 
-        const lineSubtotal = unitPrice
-          .mul(quantity)
-          .toDecimalPlaces(2);
+          taxAmount = taxAmount
+            .plus(lineTax)
+            .toDecimalPlaces(2);
 
-        const lineTax = lineSubtotal
-          .mul(gstRate)
-          .div(100)
-          .toDecimalPlaces(2);
-
-        subtotal = subtotal
-          .plus(lineSubtotal)
-          .toDecimalPlaces(2);
-
-        taxAmount = taxAmount
-          .plus(lineTax)
-          .toDecimalPlaces(2);
-
-        invoiceItems.push({
-          productId: product.id.toString(),
-          title: product.title,
-          quantity: item.quantity,
-          unitPrice: unitPrice.toFixed(2),
-          gstRate: gstRate.toFixed(2),
-          taxAmount: lineTax.toFixed(2),
-          lineSubtotal: lineSubtotal.toFixed(2),
-        });
+          invoiceItems.push({
+            productId: product.id.toString(),
+            title: product.title,
+            quantity: item.quantity,
+            unitPrice: unitPrice.toFixed(2),
+            gstRate: gstRate.toFixed(2),
+            taxAmount: lineTax.toFixed(2),
+            lineSubtotal: lineSubtotal.toFixed(2),
+          });
       }
 
       const shippingAmount = new Prisma.Decimal(
