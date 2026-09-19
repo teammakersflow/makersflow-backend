@@ -49,4 +49,9 @@ export class CreateRazorpayOrderDto {
   @IsOptional()
   @IsString()
   order_type?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  coupon_code?: string;
 }

@@ -2,10 +2,8 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-
 import { ShippingRateDto } from './dto/shipping-rate.dto';
 
 @Injectable()
@@ -87,5 +85,30 @@ export class ShippingRatesService {
         'Unable to fetch shipping rates',
       );
     }
+  }
+
+  async getShippingAmount(dto: ShippingRateDto): Promise<number> {
+    const result = await this.getRates(dto);
+
+    const couriers =
+      result.data?.data?.available_courier_companies ?? [];
+
+    if (!Array.isArray(couriers) || couriers.length === 0) {
+      throw new InternalServerErrorException(
+        'No shipping courier is available for this address',
+      );
+    }
+
+    const validRates = couriers
+      .map((courier: any) => Number(courier.rate))
+      .filter((rate: number) => Number.isFinite(rate) && rate >= 0);
+
+    if (validRates.length === 0) {
+      throw new InternalServerErrorException(
+        'Shiprocket returned no valid shipping rates',
+      );
+    }
+
+    return Math.min(...validRates);
   }
 }

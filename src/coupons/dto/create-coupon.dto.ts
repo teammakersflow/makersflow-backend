@@ -40,10 +40,6 @@ export class CreateCouponDto {
   usage_limit?: number;
 
   @IsOptional()
-  @IsInt()
-  usage_count?: number;
-
-  @IsOptional()
   @IsBoolean()
   is_active?: boolean;
 
@@ -68,15 +64,7 @@ export class CreateCouponDto {
 
   @IsOptional()
   @IsNumber()
-  max_discount_amount?: number;
-
-  @IsOptional()
-  @IsNumber()
   min_order_amount?: number;
-
-  @IsOptional()
-  @IsInt()
-  used_count?: number;
 
   @IsOptional()
   @IsUUID()

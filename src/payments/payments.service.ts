@@ -4,6 +4,7 @@ import {
   ConflictException,
   NotFoundException,
   UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -14,11 +15,12 @@ import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
 import { ProductsService } from '../products/products.service';
-
+import { CouponsService } from '../coupons/coupons.service';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
 import PDFDocument from 'pdfkit';
 import { StorageService } from '../storage/storage.service';
+import { ShippingRatesService } from '../shipping-rates/shipping-rates.service';
 
 @Injectable()
 export class PaymentsService {
@@ -30,6 +32,8 @@ export class PaymentsService {
     private storageService: StorageService,
     private readonly enrollmentsService: EnrollmentsService,
     private readonly productsService: ProductsService,
+    private couponsService: CouponsService,
+    private readonly shippingRatesService: ShippingRatesService,
   ) {
     const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
@@ -63,7 +67,7 @@ export class PaymentsService {
 
     if (orderType !== 'product') {
       throw new BadRequestException(
-        'This payment flow currently supports product orders only',
+        'Course-only and mixed-cart payments are not supported yet.',
       );
     }
 
@@ -135,6 +139,9 @@ export class PaymentsService {
         status: true,
         in_stock: true,
         is_course: true,
+        weight: true,
+        weight_kg: true,
+        stock_quantity: true,
       },
     });
 
@@ -153,6 +160,7 @@ export class PaymentsService {
 
     let subtotal = new Prisma.Decimal(0);
     let taxAmount = new Prisma.Decimal(0);
+    let totalWeightKg = new Prisma.Decimal(0);
 
     const invoiceItems: Array<{
       productId: string;
@@ -165,27 +173,29 @@ export class PaymentsService {
     }> = [];
 
     for (const item of normalizedItems) {
-      const product = productMap.get(item.productId.toString());
+      const product = productMap.get(
+        item.productId.toString(),
+      );
 
       if (!product) {
         throw new NotFoundException(
-          `Product ${item.productId.toString()} was not found`,
+          `Product not found: ${item.productId.toString()}`,
         );
       }
 
-      if (product.price === null) {
-        throw new BadRequestException(
-          `Product "${product.title}" does not have a valid price`,
-        );
-      }
-
-      if (product.price.lessThanOrEqualTo(0)) {
+      if (
+        product.price === null ||
+        product.price.lessThanOrEqualTo(0)
+      ) {
         throw new BadRequestException(
           `Product "${product.title}" has an invalid price`,
         );
       }
 
-      if (product.status && product.status !== 'published') {
+      if (
+        product.status &&
+        !['active', 'published'].includes(product.status.toLowerCase())
+      ) {
         throw new BadRequestException(
           `Product "${product.title}" is not available for purchase`,
         );
@@ -197,14 +207,37 @@ export class PaymentsService {
         );
       }
 
+      if (
+        product.stock_quantity !== null &&
+        product.stock_quantity !== undefined &&
+        item.quantity > Number(product.stock_quantity)
+      ) {
+        throw new BadRequestException(
+          `Insufficient stock for product "${product.title}". Available: ${product.stock_quantity}`,
+        );
+      }
+
       const quantity = new Prisma.Decimal(item.quantity);
+
       const unitPrice = product.price;
       const gstRate = product.gst_rate || new Prisma.Decimal(0);
 
-      /*
-      * Option B:
-      * Product price excludes GST.
-      */
+      const productWeight = product.weight_kg ?? product.weight;
+
+      if (
+        productWeight === null ||
+        productWeight === undefined ||
+        new Prisma.Decimal(productWeight).lessThanOrEqualTo(0)
+      ) {
+        throw new BadRequestException(
+          `Product "${product.title}" has an invalid weight`,
+        );
+      }
+
+      totalWeightKg = totalWeightKg
+        .plus(new Prisma.Decimal(productWeight).mul(quantity))
+        .toDecimalPlaces(3);
+
       const lineSubtotal = unitPrice
         .mul(quantity)
         .toDecimalPlaces(2);
@@ -231,14 +264,79 @@ export class PaymentsService {
         taxAmount: lineTax.toFixed(2),
         lineSubtotal: lineSubtotal.toFixed(2),
       });
-    }
+    }  // <-- IMPORTANT: closes the for loop
+
+    let shippingAmount = new Prisma.Decimal(0);
 
     /*
     * No shipping or discount is applied here because your current
     * order schema does not define a trusted shipping/discount calculation.
     */
-    const shippingAmount = new Prisma.Decimal(0);
-    const discountAmount = new Prisma.Decimal(0);
+    let discountAmount = new Prisma.Decimal(0);
+
+    const pickupPostcode =
+      this.configService.get<string>('SHIPROCKET_PICKUP_POSTCODE');
+
+    const deliveryPostcode = String(
+      dto.shipping_address?.pincode ??
+        dto.shipping_address?.postal_code ??
+        dto.shipping_address?.postcode ??
+        '',
+    ).trim();
+
+    if (!pickupPostcode) {
+      throw new InternalServerErrorException(
+        'Shiprocket pickup postcode is not configured',
+      );
+    }
+
+    if (!/^\d{6}$/.test(deliveryPostcode)) {
+      throw new BadRequestException(
+        'A valid 6-digit delivery pincode is required',
+      );
+    }
+
+    shippingAmount = new Prisma.Decimal(
+      await this.shippingRatesService.getShippingAmount({
+        pickup_postcode: pickupPostcode,
+        delivery_postcode: deliveryPostcode,
+        weight: Math.max(totalWeightKg.toNumber(), 0.1),
+        product_type: 'product',
+      }),
+    );
+
+    if (dto.coupon_code) {
+      const productIds = normalizedItems.map((item) =>
+        String(item.productId),
+      );
+
+      const courseIds = normalizedItems
+        .filter((item) => {
+          const product = productMap.get(
+            item.productId.toString(),
+          );
+
+          return product?.is_course === true;
+        })
+        .map((item) => String(item.productId));
+
+      const couponResult = await this.couponsService.validate(userId, {
+        code: dto.coupon_code,
+        order_amount: subtotal.plus(taxAmount).toNumber(),
+        product_ids: productIds,
+        course_ids: courseIds,
+      });
+
+      if (!couponResult.valid) {
+        throw new BadRequestException(
+          'Invalid or unusable coupon',
+        );
+      }
+
+      discountAmount = new Prisma.Decimal(
+        couponResult.discount_amount,
+      );
+    }
 
     const totalAmount = subtotal
       .plus(taxAmount)
@@ -272,15 +370,24 @@ export class PaymentsService {
       notes: {
         user_id: userId,
         order_type: orderType,
-        items: JSON.stringify(normalizedItems.map((item) => ({
-          productId: item.productId.toString(),
-          quantity: item.quantity,
-        }))),
+
+        items: JSON.stringify(
+          normalizedItems.map((item) => ({
+            productId: item.productId.toString(),
+            quantity: item.quantity,
+          })),
+        ),
+
         shipping_address: dto.shipping_address
           ? JSON.stringify(dto.shipping_address)
           : '',
+
+        coupon_code: dto.coupon_code || '',
+
         subtotal: subtotal.toFixed(2),
         tax_amount: taxAmount.toFixed(2),
+        shipping_amount: shippingAmount.toFixed(2),
+        discount_amount: discountAmount.toFixed(2),
         total_amount: totalAmount.toFixed(2),
       },
     });
@@ -337,7 +444,7 @@ export class PaymentsService {
     }
 
     if (payment.status === 'captured') {
-      const existingOrder = await this.prisma.orders.findUnique({
+      const existingOrder = await this.prisma.orders.findFirst({
         where: {
           payment_id: payment.id,
         },
@@ -479,7 +586,6 @@ export class PaymentsService {
       * Never trust frontend values or Razorpay notes for pricing.
       */
       const productIds = normalizedItems.map((item) => item.product_id);
-
       const products = await this.prisma.products.findMany({
         where: {
           id: {
@@ -546,13 +652,40 @@ export class PaymentsService {
 
         if (!product.in_stock) {
           throw new BadRequestException(
-            `Product "${product.title}" is out of stock`,
-          );
-        }
+              `Product "${product.title}" is out of stock`,
+            );
+          }
 
-        const quantity = new Prisma.Decimal(item.quantity);
-        const unitPrice = product.price;
-        const gstRate = product.gst_rate || new Prisma.Decimal(0);
+          const quantity = new Prisma.Decimal(item.quantity);
+
+          if (
+            product.stock_quantity !== null &&
+            product.stock_quantity !== undefined &&
+            quantity.greaterThan(new Prisma.Decimal(product.stock_quantity))
+          ) {
+            throw new BadRequestException(
+              `Insufficient stock for product "${product.title}". Available: ${product.stock_quantity}`,
+            );
+          }
+
+          const unitPrice = product.price;
+          const gstRate = product.gst_rate || new Prisma.Decimal(0);
+
+          const productWeight = product.weight_kg ?? product.weight;
+
+          if (
+            productWeight === null ||
+            productWeight === undefined ||
+            new Prisma.Decimal(productWeight).lessThanOrEqualTo(0)
+          ) {
+            throw new BadRequestException(
+              `Product "${product.title}" has an invalid weight`,
+            );
+          }
+
+          totalWeightKg = totalWeightKg
+            .plus(new Prisma.Decimal(productWeight).mul(quantity))
+            .toDecimalPlaces(3);
 
         const lineSubtotal = unitPrice
           .mul(quantity)
@@ -582,9 +715,35 @@ export class PaymentsService {
         });
       }
 
+      const shippingAmount = new Prisma.Decimal(
+        typeof orderNotes.shipping_amount === 'string'
+          ? orderNotes.shipping_amount
+          : '0',
+      );
+
+      const discountAmount = new Prisma.Decimal(
+        typeof orderNotes.discount_amount === 'string'
+          ? orderNotes.discount_amount
+          : '0',
+      );
+
+      if (shippingAmount.lessThan(0) || discountAmount.lessThan(0)) {
+        throw new BadRequestException(
+          'Invalid shipping or discount amount',
+        );
+      }
+
       const calculatedTotal = subtotal
         .plus(taxAmount)
+        .plus(shippingAmount)
+        .minus(discountAmount)
         .toDecimalPlaces(2);
+
+      if (calculatedTotal.lessThanOrEqualTo(0)) {
+        throw new BadRequestException(
+          'Calculated order amount must be greater than zero',
+        );
+      }
 
       const calculatedAmountInPaise = calculatedTotal
         .mul(100)
@@ -625,6 +784,8 @@ export class PaymentsService {
         invoiceItems,
         subtotal.toNumber(),
         taxAmount.toNumber(),
+        shippingAmount.toNumber(),
+        discountAmount.toNumber(),
         calculatedTotal.toNumber(),
         shippingAddress,
       );
@@ -682,7 +843,6 @@ export class PaymentsService {
         total_amount: calculatedTotal,
         subtotal,
         tax_amount: taxAmount,
-
         status: 'paid',
         order_type: orderType,
 
@@ -768,6 +928,88 @@ export class PaymentsService {
         invoice_key: uploadedInvoice.key,
       },
     });
+
+    /*
+    * Record coupon usage only after successful payment verification.
+    * This keeps coupon usage atomic with the order/payment transaction.
+    */
+    const couponCode =
+      typeof orderNotes.coupon_code === 'string'
+        ? orderNotes.coupon_code.trim()
+        : '';
+
+    if (couponCode) {
+      const coupon = await tx.coupons.findUnique({
+        where: {
+          code: couponCode,
+        },
+      });
+
+      if (!coupon) {
+        throw new BadRequestException('Invalid coupon code');
+      }
+
+      const alreadyUsed = await tx.coupon_usage.findUnique({
+        where: {
+          coupon_id_user_id: {
+            coupon_id: coupon.id,
+            user_id: userId,
+          },
+        },
+      });
+
+      if (alreadyUsed) {
+        throw new BadRequestException(
+          'You have already used this coupon',
+        );
+      }
+
+      /*
+      * Atomically increment usage only when the usage limit
+      * has not already been reached.
+      */
+      if (coupon.usage_limit !== null) {
+        const usageUpdate = await tx.coupons.updateMany({
+          where: {
+            id: coupon.id,
+            usage_count: {
+              lt: coupon.usage_limit,
+            },
+          },
+          data: {
+            usage_count: {
+              increment: 1,
+            },
+          },
+        });
+
+        if (usageUpdate.count !== 1) {
+          throw new BadRequestException(
+            'Coupon usage limit reached',
+          );
+        }
+      } else {
+        await tx.coupons.update({
+          where: {
+            id: coupon.id,
+          },
+          data: {
+            usage_count: {
+              increment: 1,
+            },
+          },
+        });
+      }
+
+      await tx.coupon_usage.create({
+        data: {
+          coupon_id: coupon.id,
+          user_id: userId,
+          order_id: order.id,
+          discount_amount: discountAmount,
+        },
+      });
+    }
 
     /*
     * Mark payment as captured only after all fulfillment succeeds.
@@ -901,6 +1143,8 @@ export class PaymentsService {
     }>,
     subtotal: number,
     taxAmount: number,
+    shippingAmount: number,
+    discountAmount: number,
     totalAmount: number,
     shippingAddress?: Record<string, any>,
   ) {
@@ -1010,7 +1254,7 @@ export class PaymentsService {
         .fontSize(9)
         .font('Helvetica-Bold')
         .text(
-          'Product                         Qty       Price       GST       Tax       Total',
+          'Product Qty Price GST Tax Total',
         );
 
       document.moveDown(0.5);
@@ -1051,6 +1295,18 @@ export class PaymentsService {
       document
         .font('Helvetica')
         .text(`GST/Tax: ${formatCurrency(taxAmount)}`, {
+          align: 'right',
+        });
+
+      document
+        .font('Helvetica')
+        .text(`Shipping: ${formatCurrency(shippingAmount)}`, {
+          align: 'right',
+        });
+
+      document
+        .font('Helvetica')
+        .text(`Discount: -${formatCurrency(discountAmount)}`, {
           align: 'right',
         });
 

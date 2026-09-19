@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-
 import { ShippingRatesController } from './shipping-rates.controller';
 import { ShippingRatesService } from './shipping-rates.service';
 
@@ -8,5 +7,6 @@ import { ShippingRatesService } from './shipping-rates.service';
   imports: [ConfigModule],
   controllers: [ShippingRatesController],
   providers: [ShippingRatesService],
+  exports: [ShippingRatesService],
 })
 export class ShippingRatesModule {}

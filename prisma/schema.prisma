@@ -229,7 +229,7 @@ model invoices {
   invoice_url    String?
   created_at     DateTime? @default(now()) @db.Timestamptz(6)
   invoice_key    String?
-  orders         orders    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  orders         orders    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([user_id], map: "idx_invoices_user")
   @@schema("public")
@@ -387,7 +387,7 @@ model orders {
   razorpay_id         String?
   shipping_address    Json?
   created_at          DateTime?          @default(now()) @db.Timestamptz(6)
-  payment_id          String?            @unique @db.Uuid
+  payment_id          String?            @db.Uuid
   coupon_id           String?            @db.Uuid
   coupon_code         String?
   discount_amount     Decimal?           @default(0) @db.Decimal(10, 2)
