@@ -45,6 +45,8 @@ import { StreaksModule } from './streaks/streaks.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
 import { ChallengesModule } from './challenges/challenges.module';
+import { QuizAttemptsModule } from './quiz-attempts/quiz-attempts.module';
+import { BillingProfileModule } from './billing-profile/billing-profile.module';
 
 @Module({
   imports: [
@@ -61,6 +63,7 @@ import { ChallengesModule } from './challenges/challenges.module';
     AuthModule,
     WhatsappOtpModule,
     UsersModule,
+    BillingProfileModule,
     ProductsModule,
     CouponsModule,
     OrdersModule,
@@ -77,6 +80,7 @@ import { ChallengesModule } from './challenges/challenges.module';
     StorageModule,
     SettingsModule,
     QuizQuestionsModule,
+    QuizAttemptsModule,
     CoursePurchasesModule,
     LessonProgressModule,
     PromotionsModule,
