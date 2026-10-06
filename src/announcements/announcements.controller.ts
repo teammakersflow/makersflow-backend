@@ -32,6 +32,11 @@ export class AnnouncementsController {
   findAll() {
     return this.announcementsService.findAll();
   }
+  @Get('active')
+  @UseGuards(JwtAuthGuard)
+  findActive() {
+    return this.announcementsService.findActive();
+  }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
