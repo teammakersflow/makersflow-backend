@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import {
   Injectable,
   UnauthorizedException,
@@ -48,7 +49,7 @@ export class AuthService {
     if (!user) {
       user = await this.prisma.public_users.create({
         data: {
-          id: payload.sub!,
+          id: randomUUID(),
           email: payload.email,
           full_name: payload.name,
           avatar_url: payload.picture,

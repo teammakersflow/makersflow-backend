@@ -21,6 +21,27 @@ export class AnnouncementsService {
     });
   }
 
+  async findActive() {
+    return this.prisma.announcements.findMany({
+      where: {
+        status: 'published',
+        OR: [
+          {
+            scheduled_at: null,
+          },
+          {
+            scheduled_at: {
+              lte: new Date(),
+            },
+          },
+        ],
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
   async findOne(id: string) {
     const announcement =
       await this.prisma.announcements.findUnique({
