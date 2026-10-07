@@ -57,7 +57,7 @@ export class AnnouncementsService {
     }
 
     return announcement;
-  }
+  } 
 
   create(createAnnouncementDto: CreateAnnouncementDto) {
     return this.prisma.announcements.create({
