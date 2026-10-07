@@ -26,7 +26,7 @@ export class AnnouncementsController {
     private readonly announcementsService: AnnouncementsService,
   ) {}
 
-  @Get()
+  @Get() 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   findAll() {
