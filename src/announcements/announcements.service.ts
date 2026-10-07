@@ -76,7 +76,7 @@ export class AnnouncementsService {
       },
     });
   }
-
+  
   async update(
     id: string,
     updateAnnouncementDto: UpdateAnnouncementDto,
