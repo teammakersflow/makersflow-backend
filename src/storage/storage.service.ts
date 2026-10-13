@@ -227,6 +227,46 @@ export class StorageService {
     };
   }
 
+
+  async createSignedImageUrl(imageUrl: string | null) {
+    if (!imageUrl) {
+      return null;
+    }
+
+    const s3 = this.getClient();
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
+    const region = this.configService.get<string>('AWS_REGION')!;
+
+    try {
+      const url = new URL(imageUrl);
+      const expectedHost = `${bucket}.s3.${region}.amazonaws.com`;
+
+      if (url.hostname !== expectedHost || url.protocol !== 'https:') {
+        return imageUrl;
+      }
+
+      const key = decodeURIComponent(url.pathname.replace(/^\/+/, ''));
+
+      if (!key || !['courses/', 'products/', 'news/'].some(
+        (folder) => key.startsWith(folder),
+      )) {
+        return imageUrl;
+      }
+
+      const command = new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      });
+
+      return await getSignedUrl(s3, command, {
+        expiresIn: 3600,
+      });
+    } catch {
+      this.logger.warn('Could not generate a signed image URL');
+      return imageUrl;
+    }
+  }
+
   async createChallengeUploadUrl(fileName: string, contentType: string) {
     return this.createUploadUrl(fileName, contentType, 'challenges');
   }

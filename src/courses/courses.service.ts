@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class CoursesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+  private prisma: PrismaService,
+  private readonly storageService: StorageService,
+) {}
 
   create(createCourseDto: CreateCourseDto) {
     return this.prisma.courses.create({
@@ -14,9 +17,18 @@ export class CoursesService {
     });
   }
 
-  findAll() {
-    return this.prisma.courses.findMany();
-  }
+async findAll() {
+  const courses = await this.prisma.courses.findMany();
+
+  return Promise.all(
+    courses.map(async (course) => ({
+      ...course,
+      thumbnail_url: await this.storageService.createSignedImageUrl(
+        course.thumbnail_url,
+      ),
+    })),
+  );
+}
 
   findOne(id: bigint) {
     return this.prisma.courses.findUnique({
