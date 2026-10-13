@@ -194,7 +194,7 @@ export class PaymentsService {
 
       if (
         product.status &&
-        !['active', 'published'].includes(product.status.toLowerCase())
+        !['active', 'published', 'available'].includes(product.status.toLowerCase())
       ) {
         throw new BadRequestException(
           `Product "${product.title}" is not available for purchase`,
