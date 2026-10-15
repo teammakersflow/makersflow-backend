@@ -207,9 +207,11 @@ export class PaymentsService {
         );
       }
 
+      
       if (
         product.stock_quantity !== null &&
         product.stock_quantity !== undefined &&
+        Number(product.stock_quantity) >= 0 &&
         item.quantity > Number(product.stock_quantity)
       ) {
         throw new BadRequestException(
