@@ -44,7 +44,7 @@ describe('PaymentsService', () => {
       findUnique: jest.fn(),
     },
     course_purchases: { findUnique: jest.fn() },
-    enrollments: { findFirst: jest.fn() },
+    enrollments: { findFirst: jest.fn(), findUnique: jest.fn() },
     payments: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -806,6 +806,67 @@ describe('PaymentsService', () => {
 
     expect(razorpayOrdersCreateMock).not.toHaveBeenCalled();
     expect(prismaMock.payments.create).not.toHaveBeenCalled();
+  });
+  it('should create a Razorpay order directly for a paid course', async () => {
+    prismaMock.courses.findUnique.mockResolvedValue({
+      id: BigInt(5),
+      title: 'IoRT Fundamentals',
+      price: new Prisma.Decimal(100),
+      gst_rate: new Prisma.Decimal(18),
+      is_free: false,
+      is_published: true,
+    });
+
+    prismaMock.enrollments.findUnique.mockResolvedValue(null);
+    prismaMock.course_purchases.findUnique.mockResolvedValue(null);
+
+    razorpayOrdersCreateMock.mockResolvedValue({
+      id: 'order_direct_course_test',
+      amount: 11800,
+      currency: 'INR',
+    });
+
+    prismaMock.payments.create.mockResolvedValue({
+      id: 'payment_direct_course_test',
+    });
+
+    const result = await service.createRazorpayOrder('user-test-id', {
+      currency: 'INR',
+      order_type: 'course',
+      course_id: '5',
+    });
+
+    expect(razorpayOrdersCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amount: 11800,
+        currency: 'INR',
+        notes: expect.objectContaining({
+          user_id: 'user-test-id',
+          order_type: 'course',
+          course_id: '5',
+          items: '[]',
+          total_amount: '118.00',
+        }),
+      }),
+    );
+
+    expect(prismaMock.payments.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          user_id: 'user-test-id',
+          razorpay_order_id: 'order_direct_course_test',
+          currency: 'INR',
+          status: 'pending',
+          amount: expect.any(Prisma.Decimal),
+        }),
+      }),
+    );
+
+    expect(result.razorpay_order_id).toBe('order_direct_course_test');
+    expect(result.pricing.subtotal).toBe('100.00');
+    expect(result.pricing.tax_amount).toBe('18.00');
+    expect(result.pricing.total_amount).toBe('118.00');
+    expect(productsServiceMock.deductStock).not.toHaveBeenCalled();
   });
   it('should reject an invalid signature before granting direct-course access', async () => {
     const orderId = 'order_invalid_signature_test';
