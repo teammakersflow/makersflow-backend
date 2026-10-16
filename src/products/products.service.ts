@@ -3,18 +3,54 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
+
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  
+constructor(
+  private prisma: PrismaService,
+  private storageService: StorageService,
+) {}
+
 
   create(createProductDto: CreateProductDto) {
     return this.prisma.products.create({
       data: createProductDto,
     });
   }
+
+
+private async withSignedImageUrls<T extends {
+  thumbnail_url?: string | null;
+  images?: unknown;
+}>(product: T): Promise<T> {
+  const signUrl = (url: string) =>
+    this.storageService.createSignedImageUrl(url);
+
+  const thumbnail = product.thumbnail_url
+    ? await signUrl(product.thumbnail_url)
+    : product.thumbnail_url;
+
+  let images = product.images;
+
+  if (Array.isArray(images)) {
+    images = await Promise.all(
+      images.map(async (url) =>
+        typeof url === 'string' ? signUrl(url) : url,
+      ),
+    );
+  }
+
+  return {
+    ...product,
+    thumbnail_url: thumbnail,
+    images,
+  };
+}
 
 async findAll(
   page = 1,
@@ -70,11 +106,17 @@ async findAll(
   };
 }
 
-  findOne(id: bigint) {
-    return this.prisma.products.findUnique({
-      where: { id },
-    });
-  }
+
+async findOne(id: bigint) {
+  const product = await this.prisma.products.findUnique({
+    where: { id },
+  });
+
+  if (!product) return null;
+
+  return this.withSignedImageUrls(product);
+}
+
 
   update(id: bigint, updateProductDto: UpdateProductDto) {
     return this.prisma.products.update({
