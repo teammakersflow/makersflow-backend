@@ -65,9 +65,151 @@ export class PaymentsService {
       );
     }
 
-    if (orderType !== 'product') {
+    if (!['product', 'course'].includes(orderType)) {
+      throw new BadRequestException('Unsupported order type');
+    }
+    if (orderType === 'course' && dto.course_id !== undefined) {
+      if (!/^\d+$/.test(dto.course_id)) {
+        throw new BadRequestException('Invalid course ID');
+      }
+
+      if (dto.coupon_code) {
+        throw new BadRequestException(
+          'Coupons are not supported for direct course purchases yet',
+        );
+      }
+
+      if (dto.items && dto.items.length > 0) {
+        throw new BadRequestException(
+          'Direct course purchases must not include product items',
+        );
+      }
+
+      const courseId = BigInt(dto.course_id);
+
+      const course = await this.prisma.courses.findUnique({
+        where: { id: courseId },
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          gst_rate: true,
+          is_free: true,
+          is_published: true,
+        },
+      });
+
+      if (
+        !course ||
+        course.is_published !== true ||
+        course.is_free !== false ||
+        !course.price ||
+        course.price.lessThanOrEqualTo(0)
+      ) {
+        throw new BadRequestException(
+          'Course is unavailable for paid enrollment',
+        );
+      }
+
+      const existingEnrollment = await this.prisma.enrollments.findUnique({
+        where: {
+          user_id_course_id: {
+            user_id: userId,
+            course_id: courseId,
+          },
+        },
+      });
+
+      const existingPurchase = await this.prisma.course_purchases.findUnique({
+        where: {
+          user_id_course_id: {
+            user_id: userId,
+            course_id: courseId,
+          },
+        },
+      });
+
+      if (
+        existingEnrollment?.payment_status === 'completed' ||
+        existingPurchase?.access_granted === true
+      ) {
+        throw new BadRequestException(
+          'You already have access to this course',
+        );
+      }
+
+      const subtotal = course.price;
+      const taxAmount = subtotal
+        .mul(course.gst_rate)
+        .div(100)
+        .toDecimalPlaces(2);
+      const totalAmount = subtotal
+        .plus(taxAmount)
+        .toDecimalPlaces(2);
+      const amountInPaise = totalAmount.mul(100).toNumber();
+
+      if (!Number.isSafeInteger(amountInPaise) || amountInPaise <= 0) {
+        throw new BadRequestException('Calculated course price is invalid');
+      }
+
+      const razorpayOrder = await this.razorpay.orders.create({
+        amount: amountInPaise,
+        currency,
+        receipt: dto.receipt || `course_${course.id}_${Date.now()}`,
+        notes: {
+          user_id: userId,
+          order_type: 'course',
+          course_id: course.id.toString(),
+          items: '[]',
+          shipping_amount: '0.00',
+          coupon_code: '',
+          subtotal: subtotal.toFixed(2),
+          tax_amount: taxAmount.toFixed(2),
+          discount_amount: '0.00',
+          total_amount: totalAmount.toFixed(2),
+        },
+      });
+
+      const payment = await this.prisma.payments.create({
+        data: {
+          user_id: userId,
+          razorpay_order_id: razorpayOrder.id,
+          amount: totalAmount,
+          currency,
+          status: 'pending',
+        },
+      });
+
+      return {
+        razorpay_order_id: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        payment_id: payment.id,
+        key_id: this.configService.get<string>('RAZORPAY_KEY_ID'),
+        pricing: {
+          subtotal: subtotal.toFixed(2),
+          tax_amount: taxAmount.toFixed(2),
+          shipping_amount: '0.00',
+          discount_amount: '0.00',
+          total_amount: totalAmount.toFixed(2),
+          items: [{
+            productId: course.id.toString(),
+            title: course.title,
+            quantity: 1,
+            unitPrice: subtotal.toFixed(2),
+            gstRate: course.gst_rate.toFixed(2),
+            taxAmount: taxAmount.toFixed(2),
+            lineSubtotal: subtotal.toFixed(2),
+          }],
+        },
+      };
+    }
+
+    if (orderType === 'course' && !dto.course_id) {
+      // Existing course-product checkout remains supported.
+    } else if (dto.course_id !== undefined) {
       throw new BadRequestException(
-        'Course-only and mixed-cart payments are not supported yet.',
+        'course_id is only valid for direct course purchases',
       );
     }
 
@@ -557,6 +699,22 @@ export class PaymentsService {
     }
 
     const orderNotes = razorpayOrder.notes || {};
+    const directOrderType =
+      typeof orderNotes.order_type === 'string'
+        ? orderNotes.order_type
+        : 'product';
+
+    if (
+      directOrderType === 'course' &&
+      typeof orderNotes.course_id === 'string'
+    ) {
+      return this.verifyDirectCoursePayment(
+        userId,
+        dto,
+        payment,
+        orderNotes,
+      );
+    }
 
     let orderItems: Record<string, any> | undefined;
     let shippingAddress: Record<string, any> | undefined;
@@ -1026,6 +1184,196 @@ export class PaymentsService {
         }
       }
 
+      throw error;
+    }
+  }
+
+  private async verifyDirectCoursePayment(
+    userId: string,
+    dto: VerifyPaymentDto,
+    payment: any,
+    orderNotes: Record<string, any>,
+  ) {
+    if (orderNotes.user_id !== userId) {
+      throw new BadRequestException('Course order user does not match');
+    }
+
+    const courseIdText = orderNotes.course_id;
+    if (typeof courseIdText !== 'string' || !/^\d+$/.test(courseIdText)) {
+      throw new BadRequestException('Invalid course ID in Razorpay order');
+    }
+
+    const courseId = BigInt(courseIdText);
+    const course = await this.prisma.courses.findUnique({
+      where: { id: courseId },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        gst_rate: true,
+        is_free: true,
+        is_published: true,
+      },
+    });
+
+    if (
+      !course ||
+      course.is_published !== true ||
+      course.is_free !== false ||
+      !course.price ||
+      course.price.lessThanOrEqualTo(0)
+    ) {
+      throw new BadRequestException('Course is no longer available for paid enrollment');
+    }
+
+    const subtotal = course.price.toDecimalPlaces(2);
+    const taxAmount = subtotal
+      .mul(course.gst_rate)
+      .div(100)
+      .toDecimalPlaces(2);
+    const calculatedTotal = subtotal.plus(taxAmount).toDecimalPlaces(2);
+
+    if (!payment.amount.toDecimalPlaces(2).equals(calculatedTotal)) {
+      throw new BadRequestException(
+        'Course price has changed since the payment order was created',
+      );
+    }
+
+    const calculatedAmountInPaise = calculatedTotal.mul(100).toNumber();
+    if (
+      !Number.isSafeInteger(calculatedAmountInPaise) ||
+      calculatedAmountInPaise <= 0
+    ) {
+      throw new BadRequestException('Calculated course payment is invalid');
+    }
+
+    const invoiceNumber = await this.generateUniqueInvoiceNumber();
+    const orderId = crypto.randomUUID();
+
+    const invoiceItems = [{
+      productId: course.id.toString(),
+      title: course.title,
+      quantity: 1,
+      unitPrice: subtotal.toFixed(2),
+      gstRate: course.gst_rate.toFixed(2),
+      taxAmount: taxAmount.toFixed(2),
+      lineSubtotal: subtotal.toFixed(2),
+    }];
+
+    const pdfBuffer = await this.generateInvoicePdf(
+      invoiceNumber,
+      orderId,
+      new Date(),
+      invoiceItems,
+      subtotal.toNumber(),
+      taxAmount.toNumber(),
+      0,
+      0,
+      calculatedTotal.toNumber(),
+      undefined,
+    );
+
+    let invoiceKey: string | undefined;
+
+    try {
+      const uploadedInvoice = await this.storageService.uploadPdf(
+        `invoice-${orderId}.pdf`,
+        pdfBuffer,
+      );
+      invoiceKey = uploadedInvoice.key;
+
+      const result = await this.prisma.$transaction(async (tx) => {
+        const order = await tx.orders.create({
+          data: {
+            id: orderId,
+            user_id: userId,
+            payment_id: payment.id,
+            razorpay_order_id: dto.razorpay_order_id,
+            razorpay_payment_id: dto.razorpay_payment_id,
+            total_amount: calculatedTotal,
+            subtotal,
+            tax_amount: taxAmount,
+            discount_amount: new Prisma.Decimal(0),
+            status: 'paid',
+            order_type: 'course',
+            items: [{
+              course_id: course.id.toString(),
+              title: course.title,
+              quantity: 1,
+              unit_price: subtotal.toFixed(2),
+            }] as Prisma.InputJsonValue,
+            invoice_url: uploadedInvoice.publicUrl,
+          },
+        });
+
+        await tx.course_purchases.upsert({
+          where: {
+            user_id_course_id: {
+              user_id: userId,
+              course_id: course.id,
+            },
+          },
+          create: {
+            user_id: userId,
+            course_id: course.id,
+            payment_id: payment.id,
+            order_id: order.id,
+            amount_paid: calculatedTotal,
+            access_granted: true,
+            status: 'active',
+          },
+          update: {
+            access_granted: true,
+            status: 'active',
+          },
+        });
+
+        await this.enrollmentsService.createPaidEnrollment(
+          userId,
+          course.id,
+          dto.razorpay_order_id,
+          tx,
+        );
+
+        const invoice = await tx.invoices.create({
+          data: {
+            order_id: order.id,
+            user_id: userId,
+            invoice_number: invoiceNumber,
+            amount: calculatedTotal,
+            tax_amount: taxAmount,
+            invoice_url: uploadedInvoice.publicUrl,
+            invoice_key: uploadedInvoice.key,
+          },
+        });
+
+        const updatedPayment = await tx.payments.update({
+          where: { id: payment.id },
+          data: {
+            razorpay_payment_id: dto.razorpay_payment_id,
+            razorpay_signature: dto.razorpay_signature,
+            status: 'captured',
+          },
+        });
+
+        return { order, invoice, updatedPayment };
+      });
+
+      return {
+        success: true,
+        message: 'Course payment verified and enrollment completed',
+        payment: result.updatedPayment,
+        order: result.order,
+        invoice: result.invoice,
+      };
+    } catch (error) {
+      if (invoiceKey) {
+        try {
+          await this.storageService.deleteObject(invoiceKey);
+        } catch (cleanupError) {
+          console.error('Failed to delete orphaned course invoice:', cleanupError);
+        }
+      }
       throw error;
     }
   }

@@ -9,6 +9,9 @@ import {
 } from 'class-validator';
 
 export class CreateRazorpayOrderDto {
+  @IsOptional()
+  @IsString()
+  course_id?: string;
   /**
    * Kept temporarily for frontend compatibility.
    * The backend must NOT trust this value.
