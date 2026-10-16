@@ -93,17 +93,22 @@ async findAll(
     }),
   ]);
 
-  return {
-    success: true,
-    message: 'Products fetched successfully',
-    data: products,
-    pagination: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+
+const signedProducts = await Promise.all(
+  products.map((product) => this.withSignedImageUrls(product)),
+);
+
+return {
+  success: true,
+  message: 'Products fetched successfully',
+  data: signedProducts,
+  pagination: {
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  },
+};
 }
 
 
