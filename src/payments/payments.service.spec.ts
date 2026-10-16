@@ -13,14 +13,47 @@ import { BadRequestException } from '@nestjs/common';
 describe('PaymentsService', () => {
   let service: PaymentsService;
   const razorpayOrdersCreateMock = jest.fn();
+  const razorpayOrdersFetchMock = jest.fn();
+  const razorpayPaymentsFetchMock = jest.fn();
+
+  const storageMock = {
+    uploadPdf: jest.fn(),
+    deleteObject: jest.fn(),
+  };
+
+  const enrollmentsMock = {
+    createPaidEnrollment: jest.fn(),
+  };
+
+  const productsServiceMock = {
+    deductStock: jest.fn(),
+  };
+
+  const txMock = {
+    orders: { create: jest.fn() },
+    order_items: { createMany: jest.fn() },
+    invoices: { create: jest.fn() },
+    course_purchases: { upsert: jest.fn() },
+    payments: { update: jest.fn() },
+  };
 
   const prismaMock = {
-    products: {
+    products: { findMany: jest.fn() },
+    courses: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
     },
+    course_purchases: { findUnique: jest.fn() },
+    enrollments: { findFirst: jest.fn() },
     payments: {
       create: jest.fn(),
+      findUnique: jest.fn(),
     },
+    orders: { findFirst: jest.fn() },
+    invoices: { findUnique: jest.fn() },
+    $transaction: jest.fn(
+      async (callback: (tx: any) => Promise<any>) => callback(txMock),
+    ),
   };
 
   const configMock = {
@@ -68,17 +101,17 @@ describe('PaymentsService', () => {
 
         {
           provide: StorageService,
-          useValue: {},
+          useValue: storageMock,
         },
 
         {
           provide: EnrollmentsService,
-          useValue: {},
+          useValue: enrollmentsMock,
         },
 
         {
           provide: ProductsService,
-          useValue: {},
+          useValue: productsServiceMock,
         },
 
         {
@@ -97,6 +130,10 @@ describe('PaymentsService', () => {
     (service as any).razorpay = {
       orders: {
         create: razorpayOrdersCreateMock,
+        fetch: razorpayOrdersFetchMock,
+      },
+      payments: {
+        fetch: razorpayPaymentsFetchMock,
       },
     };
     razorpayOrdersCreateMock.mockReset();
@@ -620,10 +657,10 @@ describe('PaymentsService', () => {
         shipping_address: {
           pincode: '500001',
         },
-        order_type: 'course',
+        order_type: 'unknown',
       }),
     ).rejects.toThrow(
-      'Course-only and mixed-cart payments are not supported yet.',
+      'Unsupported order type',
     );
 
     expect(razorpayOrdersCreateMock).not.toHaveBeenCalled();
@@ -769,5 +806,142 @@ describe('PaymentsService', () => {
 
     expect(razorpayOrdersCreateMock).not.toHaveBeenCalled();
     expect(prismaMock.payments.create).not.toHaveBeenCalled();
+  });
+  it('should reject an invalid signature before granting direct-course access', async () => {
+    const orderId = 'order_invalid_signature_test';
+    const paymentId = 'pay_invalid_signature_test';
+
+    prismaMock.payments.findUnique.mockResolvedValue({
+      id: 'payment-db-invalid-signature-test',
+      user_id: 'user-test-id',
+      status: 'created',
+      amount: new Prisma.Decimal(118),
+      currency: 'INR',
+    });
+
+    await expect(
+      service.verifyPayment('user-test-id', {
+        razorpay_order_id: orderId,
+        razorpay_payment_id: paymentId,
+        razorpay_signature: 'invalid-signature',
+      }),
+    ).rejects.toThrow(BadRequestException);
+
+    expect(razorpayOrdersFetchMock).not.toHaveBeenCalled();
+    expect(razorpayPaymentsFetchMock).not.toHaveBeenCalled();
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    expect(txMock.course_purchases.upsert).not.toHaveBeenCalled();
+    expect(enrollmentsMock.createPaidEnrollment).not.toHaveBeenCalled();
+  });
+
+  it('should verify a direct paid course purchase without a store product', async () => {
+    const orderId = 'order_direct_course_verify_test';
+    const paymentId = 'pay_direct_course_verify_test';
+    const signature = require('crypto')
+      .createHmac('sha256', 'test_key_secret')
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    prismaMock.payments.findUnique.mockResolvedValue({
+      id: 'payment-db-direct-course-test',
+      user_id: 'user-test-id',
+      status: 'created',
+      amount: new Prisma.Decimal(118),
+      currency: 'INR',
+    });
+    prismaMock.orders.findFirst.mockResolvedValue(null);
+    prismaMock.invoices.findUnique.mockResolvedValue(null);
+    prismaMock.courses.findUnique.mockResolvedValue({
+      id: BigInt(5),
+      title: 'IoT Fundamentals Course',
+      price: new Prisma.Decimal(100),
+      gst_rate: new Prisma.Decimal(18),
+      is_free: false,
+      is_published: true,
+    });
+
+    razorpayOrdersFetchMock.mockResolvedValue({
+      id: orderId,
+      amount: 11800,
+      currency: 'INR',
+      notes: {
+        user_id: 'user-test-id',
+        order_type: 'course',
+        course_id: '5',
+        items: '[]',
+        shipping_amount: '0.00',
+        coupon_code: '',
+        subtotal_amount: '100.00',
+        tax_amount: '18.00',
+        discount_amount: '0.00',
+        total_amount: '118.00',
+      },
+    });
+    razorpayPaymentsFetchMock.mockResolvedValue({
+      id: paymentId,
+      order_id: orderId,
+      status: 'captured',
+    });
+
+    storageMock.uploadPdf.mockResolvedValue({
+      publicUrl: 'https://example.test/direct-course-invoice.pdf',
+      key: 'direct-course-invoice-key',
+    });
+    txMock.orders.create.mockResolvedValue({
+      id: 'db-order-direct-course-test',
+    });
+    txMock.course_purchases.upsert.mockResolvedValue({
+      user_id: 'user-test-id',
+      course_id: BigInt(5),
+      access_granted: true,
+      status: 'active',
+    });
+    txMock.invoices.create.mockResolvedValue({
+      id: 'invoice-direct-course-test',
+      order_id: 'db-order-direct-course-test',
+    });
+    txMock.payments.update.mockResolvedValue({
+      id: 'payment-db-direct-course-test',
+      status: 'captured',
+    });
+    enrollmentsMock.createPaidEnrollment.mockResolvedValue({
+      user_id: 'user-test-id',
+      course_id: BigInt(5),
+      payment_status: 'completed',
+      razorpay_order_id: orderId,
+    });
+
+    jest
+      .spyOn(service as any, 'generateInvoicePdf')
+      .mockResolvedValue(Buffer.from('test-pdf'));
+
+    const result = await service.verifyPayment('user-test-id', {
+      razorpay_order_id: orderId,
+      razorpay_payment_id: paymentId,
+      razorpay_signature: signature,
+    });
+
+    expect(result.success).toBe(true);
+    expect(prismaMock.courses.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: BigInt(5) } }),
+    );
+    expect(txMock.orders.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          order_type: 'course',
+          razorpay_order_id: orderId,
+        }),
+      }),
+    );
+    expect(txMock.course_purchases.upsert).toHaveBeenCalled();
+    expect(enrollmentsMock.createPaidEnrollment).toHaveBeenCalledWith(
+      'user-test-id',
+      BigInt(5),
+      orderId,
+      txMock,
+    );
+    expect(txMock.invoices.create).toHaveBeenCalled();
+    expect(txMock.payments.update).toHaveBeenCalled();
+    expect(productsServiceMock.deductStock).not.toHaveBeenCalled();
   });
 });

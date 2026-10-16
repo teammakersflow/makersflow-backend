@@ -217,13 +217,12 @@ export class EnrollmentsService {
   }
 
   async createPaidEnrollment(
-  userId: string,
-  courseId: bigint,
-  razorpayOrderId: string,
-  tx: any = this.prisma,
-) {
-  const existingEnrollment =
-    await tx.enrollments.findUnique({
+    userId: string,
+    courseId: bigint,
+    razorpayOrderId: string,
+    tx: any = this.prisma,
+  ) {
+    const existingEnrollment = await tx.enrollments.findUnique({
       where: {
         user_id_course_id: {
           user_id: userId,
@@ -232,17 +231,33 @@ export class EnrollmentsService {
       },
     });
 
-  if (existingEnrollment) {
-    return existingEnrollment;
+    if (existingEnrollment) {
+      if (existingEnrollment.payment_status !== 'completed') {
+        return tx.enrollments.update({
+          where: {
+            user_id_course_id: {
+              user_id: userId,
+              course_id: courseId,
+            },
+          },
+          data: {
+            payment_status: 'completed',
+            razorpay_order_id: razorpayOrderId,
+          },
+        });
+      }
+
+      return existingEnrollment;
+    }
+
+    return tx.enrollments.create({
+      data: {
+        user_id: userId,
+        course_id: courseId,
+        payment_status: 'completed',
+        razorpay_order_id: razorpayOrderId,
+      },
+    });
   }
 
-  return tx.enrollments.create({
-    data: {
-      user_id: userId,
-      course_id: courseId,
-      payment_status: 'completed',
-      razorpay_order_id: razorpayOrderId,
-    },
-  });
-}
 }

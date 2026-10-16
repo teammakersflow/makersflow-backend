@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CoursesService } from './courses.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 
 describe('CoursesService', () => {
   let service: CoursesService;
@@ -11,6 +12,10 @@ describe('CoursesService', () => {
         CoursesService,
         {
           provide: PrismaService,
+          useValue: {},
+        },
+        {
+          provide: StorageService,
           useValue: {},
         },
       ],
