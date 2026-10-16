@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -55,6 +56,7 @@ export class ReviewsService {
     return this.prisma.reviews.findUnique({
       where: {
         id,
+        status: 'approved',
       },
     });
   }
@@ -75,7 +77,7 @@ export class ReviewsService {
     }
 
     if (review.user_id !== userId) {
-      throw new Error(
+      throw new ForbiddenException(
         'You can only update your own review',
       );
     }
@@ -93,9 +95,6 @@ export class ReviewsService {
           comment: updateReviewDto.comment,
         }),
 
-        ...(updateReviewDto.course_id !== undefined && {
-          course_id: BigInt(updateReviewDto.course_id),
-        }),
       },
     });
   }
