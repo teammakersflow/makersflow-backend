@@ -30,11 +30,24 @@ async findAll() {
   );
 }
 
-  findOne(id: bigint) {
-    return this.prisma.courses.findUnique({
-      where: { id },
-    });
+
+async findOne(id: bigint) {
+  const course = await this.prisma.courses.findUnique({
+    where: { id },
+  });
+
+  if (!course) {
+    return null;
   }
+
+  return {
+    ...course,
+    thumbnail_url: await this.storageService.createSignedImageUrl(
+      course.thumbnail_url,
+    ),
+  };
+}
+
 
   update(id: bigint, updateCourseDto: UpdateCourseDto) {
     return this.prisma.courses.update({
