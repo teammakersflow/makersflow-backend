@@ -414,4 +414,15 @@ export class ReviewsService {
       },
     });
   }
+
+  
+  async updateStatus(
+    id: string,
+    status: 'pending' | 'approved' | 'rejected',
+  ) {
+    return this.prisma.reviews.update({
+      where: { id },
+      data: { status },
+    });
+  }
 }
