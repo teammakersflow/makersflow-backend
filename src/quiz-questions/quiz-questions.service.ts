@@ -15,14 +15,38 @@ export class QuizQuestionsService {
     private enrollmentsService: EnrollmentsService,
   ) {}
 
-  create(createQuizQuestionDto: CreateQuizQuestionDto) {
-    return this.prisma.quiz_questions.create({
-      data: {
-        ...createQuizQuestionDto,
-        lesson_id: BigInt(createQuizQuestionDto.lesson_id),
-      },
+
+  async create(createQuizQuestionDto: CreateQuizQuestionDto) {
+    const lessonId = BigInt(createQuizQuestionDto.lesson_id);
+
+    return this.prisma.$transaction(async (tx) => {
+      // Reuse the quiz for this lesson if one already exists.
+      let quiz = await tx.quizzes.findFirst({
+        where: { lesson_id: lessonId },
+        orderBy: { id: 'asc' },
+      });
+
+      // Otherwise, create the first quiz for this lesson.
+      if (!quiz) {
+        quiz = await tx.quizzes.create({
+          data: {
+            lesson_id: lessonId,
+            title: 'Lesson Quiz',
+            questions: [],
+          },
+        });
+      }
+
+      // Save the question in the existing questions table.
+      return tx.quiz_questions.create({
+        data: {
+          ...createQuizQuestionDto,
+          lesson_id: lessonId,
+        },
+      });
     });
   }
+
 
   findAll() {
     return this.prisma.quiz_questions.findMany();
