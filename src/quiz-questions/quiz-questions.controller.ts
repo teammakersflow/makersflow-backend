@@ -32,16 +32,11 @@ export class QuizQuestionsController {
     return this.quizQuestionsService.create(createQuizQuestionDto);
   }
 
-  @Get()
-@UseGuards(JwtAuthGuard)
-findByCourse(
-  @Query('courseId') courseId: string,
-  @CurrentUser() user: AuthenticatedUser,
-) {
-  return this.quizQuestionsService.findByCourseForStudent(
-    BigInt(courseId),
-    user.id,
-  );
+@Get()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
+findAllForAdmin() {
+  return this.quizQuestionsService.findAll();
 }
 
   @Get('lesson/:lessonId')
