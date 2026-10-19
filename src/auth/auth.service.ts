@@ -55,6 +55,20 @@ export class AuthService {
           avatar_url: payload.picture,
         },
       });
+    } else {
+      user = await this.prisma.public_users.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          ...(payload.name && !user.full_name
+            ? { full_name: payload.name }
+            : {}),
+          ...(payload.picture && !user.avatar_url
+            ? { avatar_url: payload.picture }
+            : {}),
+        },
+      });
     }
 
     const accessToken = await this.jwtService.signAsync(

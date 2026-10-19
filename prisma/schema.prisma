@@ -481,6 +481,7 @@ model product_reviews {
   created_at       DateTime @default(now()) @db.Timestamptz(6)
   approved_comment String?
   products         products @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  
 
   @@unique([user_id, product_id], map: "product_reviews_user_product_unique")
   @@unique([user_id, product_id], map: "uq_product_reviews_user_product")
@@ -720,6 +721,7 @@ model reviews {
   approved_comment String?
   review_replies   review_replies[]
   courses          courses          @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
 
   @@unique([user_id, course_id], map: "reviews_user_course_unique")
   @@unique([user_id, course_id], map: "uq_reviews_user_course")

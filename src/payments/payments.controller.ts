@@ -12,15 +12,15 @@ import {
 } from '@nestjs/common';
 
 import type { Request, Response } from 'express';
-
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-
 import { PaymentsService } from './payments.service';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
-
 import { StorageService } from '../storage/storage.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { CreateRefundDto } from './dto/create-refund.dto';
 
 @ApiTags('Payments')
 @ApiBearerAuth()
@@ -101,5 +101,15 @@ export class PaymentsController {
       );
 
     return res.redirect(downloadUrl);
+  }
+
+  @Post('refund/:orderId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async createRefund(
+    @Param('orderId') orderId: string,
+    @Body() dto: CreateRefundDto,
+  ) {
+    return this.paymentsService.createRefund(orderId, dto);
   }
 }

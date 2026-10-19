@@ -21,6 +21,7 @@ import * as crypto from 'crypto';
 import PDFDocument from 'pdfkit';
 import { StorageService } from '../storage/storage.service';
 import { ShippingRatesService } from '../shipping-rates/shipping-rates.service';
+import { CreateRefundDto } from './dto/create-refund.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -1722,5 +1723,14 @@ export class PaymentsService {
         user_id: userId,
       },
     });
+  }
+
+  async createRefund(
+    orderId: string,
+    dto: CreateRefundDto, 
+  ) {
+    // Refund implementation will be added after validating
+    // the order-payment relationship and duplicate-refund safeguards.
+    throw new Error('Refund service implementation is pending validation');
   }
 }

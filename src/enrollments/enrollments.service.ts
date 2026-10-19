@@ -132,33 +132,33 @@ export class EnrollmentsService {
   }
 
   async findMyEnrollment(
-    userId: string,
-    courseId: bigint,
-  ) {
-    return this.prisma.enrollments.findUnique({
-      where: {
-        user_id_course_id: {
-          user_id: userId,
-          course_id: courseId,
+  userId: string,
+  courseId: bigint,
+) {
+  return this.prisma.enrollments.findFirst({
+    where: {
+      user_id: userId,
+      course_id: courseId,
+      payment_status: {
+        notIn: ['pending', 'failed', 'cancelled', 'refunded'],
+      },
+    },
+    include: {
+      courses: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          thumbnail_url: true,
+          price: true,
+          is_free: true,
+          level: true,
+          is_published: true,
         },
       },
-      include: {
-        courses: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            thumbnail_url: true,
-            price: true,
-            is_free: true,
-            level: true,
-            is_published: true,
-          },
-        },
-      },
-    });
-  }
-
+    },
+  });
+}
   async enrollInFreeCourse(
     userId: string,
     courseId: bigint,

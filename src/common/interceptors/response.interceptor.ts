@@ -19,6 +19,11 @@ function transformDecimals(value: any): any {
     return Number(value);
   }
 
+  // Preserve Date values as ISO strings
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
   // Convert arrays recursively
   if (Array.isArray(value)) {
     return value.map(transformDecimals);

@@ -171,6 +171,7 @@ export class ReviewsService {
   };
 }
 
+
   async findCourseReviews(courseId: bigint) {
     const course = await this.prisma.courses.findUnique({
       where: {
@@ -185,7 +186,7 @@ export class ReviewsService {
       throw new NotFoundException('Course not found');
     }
 
-    return this.prisma.reviews.findMany({
+    const reviews = await this.prisma.reviews.findMany({
       where: {
         course_id: courseId,
         status: 'approved',
@@ -203,7 +204,29 @@ export class ReviewsService {
         created_at: 'desc',
       },
     });
+
+    const userIds = [...new Set(reviews.map((review) => review.user_id))];
+
+    const users = await this.prisma.public_users.findMany({
+      where: {
+        id: { in: userIds },
+      },
+      select: {
+        id: true,
+        full_name: true,
+        avatar_url: true,
+      },
+    });
+
+    const usersById = new Map(users.map((user) => [user.id, user]));
+
+    return reviews.map((review) => ({
+      ...review,
+      users: usersById.get(review.user_id) ?? null,
+    }));
+
   }
+
 
   async findMyCourseReview(
     userId: string,
@@ -278,39 +301,61 @@ export class ReviewsService {
   // STUDENT PRODUCT REVIEWS
   // =========================
 
-  async findProductReviews(productId: bigint) {
-    const product = await this.prisma.products.findUnique({
-      where: {
-        id: productId,
-      },
-      select: {
-        id: true,
-      },
-    });
+  
+async findProductReviews(productId: bigint) {
+  const product = await this.prisma.products.findUnique({
+    where: {
+      id: productId,
+    },
+    select: {
+      id: true,
+    },
+  });
 
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    return this.prisma.product_reviews.findMany({
-      where: {
-        product_id: productId,
-        status: 'approved',
-      },
-      select: {
-        id: true,
-        user_id: true,
-        product_id: true,
-        rating: true,
-        comment: true,
-        approved_comment: true,
-        created_at: true,
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
+  if (!product) {
+    throw new NotFoundException('Product not found');
   }
+
+  const reviews = await this.prisma.product_reviews.findMany({
+    where: {
+      product_id: productId,
+      status: 'approved',
+    },
+    select: {
+      id: true,
+      user_id: true,
+      product_id: true,
+      rating: true,
+      comment: true,
+      approved_comment: true,
+      created_at: true,
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+  });
+
+  const userIds = [...new Set(reviews.map((review) => review.user_id))];
+
+  const users = await this.prisma.public_users.findMany({
+    where: {
+      id: { in: userIds },
+    },
+    select: {
+      id: true,
+      full_name: true,
+      avatar_url: true,
+    },
+  });
+
+  const usersById = new Map(users.map((user) => [user.id, user]));
+
+  return reviews.map((review) => ({
+    ...review,
+    users: usersById.get(review.user_id) ?? null,
+  }));
+}
+
 
   async findMyProductReview(
     userId: string,
