@@ -5,13 +5,13 @@ import {
   Get,
   UseGuards,
 } from '@nestjs/common';
-
+import { RegisterDto } from './dto/register.dto';
 import {
   ApiOperation,
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-
+import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -23,6 +23,31 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+
+  @Post('register')
+  @ApiOperation({
+    summary: 'Register with email and password',
+  })
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.registerWithPassword(
+      dto.email,
+      dto.password,
+      dto.fullName,
+    );
+  }
+
+
+  @Post('login')
+  @ApiOperation({
+    summary: 'Login with email and password',
+  })
+  async login(@Body() dto: LoginDto) {
+    return this.authService.loginWithPassword(
+      dto.email,
+      dto.password,
+    );
+  }
 
   @Post('google')
   @ApiOperation({

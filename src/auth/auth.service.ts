@@ -8,6 +8,8 @@ import { randomUUID } from 'crypto';
 import {
   Injectable,
   UnauthorizedException,
+  ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 
 
@@ -24,6 +26,111 @@ export class AuthService {
       this.configService.get<string>('GOOGLE_CLIENT_ID'),
     );
   }
+
+
+async registerWithPassword(
+  email: string,
+  password: string,
+  fullName: string,
+) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedName = fullName.trim();
+
+  if (!normalizedEmail || !normalizedName || !password) {
+    throw new BadRequestException(
+      'Email, password, and full name are required',
+    );
+  }
+
+  const existingUser = await this.prisma.public_users.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (existingUser) {
+    throw new ConflictException(
+      'An account with this email already exists',
+    );
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const user = await this.prisma.public_users.create({
+    data: {
+      id: randomUUID(),
+      email: normalizedEmail,
+      full_name: normalizedName,
+      password_hash: passwordHash,
+    },
+    select: {
+      id: true,
+      email: true,
+      full_name: true,
+      avatar_url: true,
+      role: true,
+    },
+  });
+
+  return {
+    success: true,
+    message: 'Account created successfully. Please sign in.',
+    data: { user },
+  };
+}
+
+
+async loginWithPassword(email: string, password: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await this.prisma.public_users.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  // Use a generic error so we don't reveal whether an account exists.
+  if (
+    !user ||
+    !user.password_hash ||
+    !(await bcrypt.compare(password, user.password_hash))
+  ) {
+    throw new UnauthorizedException('Invalid email or password');
+  }
+
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = await this.jwtService.signAsync(payload, {
+    secret: this.configService.get<string>('JWT_SECRET')!,
+    expiresIn: this.configService.get<StringValue>('JWT_EXPIRES_IN')!,
+  });
+
+  const refreshToken = await this.jwtService.signAsync(payload, {
+    secret: this.configService.get<string>('JWT_REFRESH_SECRET')!,
+    expiresIn: this.configService.get<StringValue>(
+      'JWT_REFRESH_EXPIRES_IN',
+    )!,
+  });
+
+  const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+  await this.prisma.public_users.update({
+    where: { id: user.id },
+    data: { hashed_refresh_token: hashedRefreshToken },
+  });
+
+  const { password_hash: _passwordHash, hashed_refresh_token: _refreshHash, ...safeUser } = user;
+
+  return {
+    success: true,
+    message: 'Login successful',
+    data: {
+      user: safeUser,
+      accessToken,
+      refreshToken,
+    },
+  };
+}
 
   // 👇 Add the method here
   async googleLogin(idToken: string) {
@@ -108,15 +215,23 @@ export class AuthService {
       },
     });
 
-    return {
-      success: true,
-      message: 'Google authentication successful',
-      data: {
-        user,
-        accessToken,
-        refreshToken,
-      },
-    };
+return {
+  success: true,
+  message: 'Google authentication successful',
+  data: {
+    user: {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      avatar_url: user.avatar_url,
+      grade: user.grade,
+      school: user.school,
+      role: user.role,
+    },
+    accessToken,
+    refreshToken,
+  },
+};
   }
 
   async refreshAccessToken(refreshToken: string) {
