@@ -84,23 +84,51 @@ export class ReviewsService {
 
 
 
-async update(
-  id: string,
-  updateReviewDto: UpdateReviewDto,
-  userId: string,
-) {
-  const courseReview = await this.prisma.reviews.findUnique({
-    where: { id },
-  });
+  async update(
+    id: string,
+    updateReviewDto: UpdateReviewDto,
+    userId: string,
+  ) {
+    const courseReview = await this.prisma.reviews.findUnique({
+      where: { id },
+    });
 
-  if (courseReview) {
-    if (courseReview.user_id !== userId) {
+    if (courseReview) {
+      if (courseReview.user_id !== userId) {
+        throw new ForbiddenException(
+          'You can only update your own review',
+        );
+      }
+
+      return this.prisma.reviews.update({
+        where: { id },
+        data: {
+          ...(updateReviewDto.rating !== undefined && {
+            rating: updateReviewDto.rating,
+          }),
+          ...(updateReviewDto.comment !== undefined && {
+            comment: updateReviewDto.comment,
+          }),
+          status: 'pending',
+        },
+      });
+    }
+
+    const productReview = await this.prisma.product_reviews.findUnique({
+      where: { id },
+    });
+
+    if (!productReview) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (productReview.user_id !== userId) {
       throw new ForbiddenException(
         'You can only update your own review',
       );
     }
 
-    return this.prisma.reviews.update({
+    return this.prisma.product_reviews.update({
       where: { id },
       data: {
         ...(updateReviewDto.rating !== undefined && {
@@ -113,34 +141,6 @@ async update(
       },
     });
   }
-
-  const productReview = await this.prisma.product_reviews.findUnique({
-    where: { id },
-  });
-
-  if (!productReview) {
-    throw new NotFoundException('Review not found');
-  }
-
-  if (productReview.user_id !== userId) {
-    throw new ForbiddenException(
-      'You can only update your own review',
-    );
-  }
-
-  return this.prisma.product_reviews.update({
-    where: { id },
-    data: {
-      ...(updateReviewDto.rating !== undefined && {
-        rating: updateReviewDto.rating,
-      }),
-      ...(updateReviewDto.comment !== undefined && {
-        comment: updateReviewDto.comment,
-      }),
-      status: 'pending',
-    },
-  });
-}
 
 
 
