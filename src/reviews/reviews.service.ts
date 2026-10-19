@@ -33,24 +33,45 @@ export class ReviewsService {
   }
 
   async findAll(include: string[] = []) {
-    const includeUser = include.includes('user');
     const includeCourse = include.includes('course');
 
-    return this.prisma.reviews.findMany({
-      include: {
-        courses: includeCourse
-          ? {
-              select: {
-                id: true,
-                title: true,
-                price: true,
-                is_free: true,
-              },
-            }
-          : false,
-      },
-    });
-  }
+    const [courseReviews, productReviews] = await Promise.all([
+      this.prisma.reviews.findMany({
+        include: {
+          courses: includeCourse
+            ? {
+                select: {
+                  id: true,
+                  title: true,
+                  price: true,
+                  is_free: true,
+                },
+              }
+            : false,
+        },
+      }),
+      this.prisma.product_reviews.findMany({
+        include: {
+          products: true,
+        },
+      }),
+    ]);
+
+    return [
+      ...courseReviews.map((review) => ({
+        ...review,
+        review_type: 'course' as const,
+      })),
+      ...productReviews.map((review) => ({
+        ...review,
+        review_type: 'product' as const,
+      })),
+    ].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime(),
+    );
+  } 
 
   findOne(id: string) {
     return this.prisma.reviews.findUnique({
@@ -99,12 +120,28 @@ export class ReviewsService {
     });
   }
 
-  remove(id: string) {
-    return this.prisma.reviews.delete({
-      where: {
-        id,
-      },
+  async remove(id: string) {
+    const courseReview = await this.prisma.reviews.findUnique({
+      where: { id },
     });
+
+    if (courseReview) {
+      return this.prisma.reviews.delete({
+        where: { id },
+      });
+    }
+
+    const productReview = await this.prisma.product_reviews.findUnique({
+      where: { id },
+    });
+
+    if (productReview) {
+      return this.prisma.product_reviews.delete({
+        where: { id },
+      });
+    }
+
+    throw new Error('Review not found');
   }
 
   // =========================
@@ -465,9 +502,28 @@ async findProductReviews(productId: bigint) {
     id: string,
     status: 'pending' | 'approved' | 'rejected',
   ) {
-    return this.prisma.reviews.update({
+    const courseReview = await this.prisma.reviews.findUnique({
       where: { id },
-      data: { status },
     });
+
+    if (courseReview) {
+      return this.prisma.reviews.update({
+        where: { id },
+        data: { status },
+      });
+    }
+
+    const productReview = await this.prisma.product_reviews.findUnique({
+      where: { id },
+    });
+
+    if (productReview) {
+      return this.prisma.product_reviews.update({
+        where: { id },
+        data: { status },
+      });
+    }
+
+    throw new Error('Review not found');
   }
 }
