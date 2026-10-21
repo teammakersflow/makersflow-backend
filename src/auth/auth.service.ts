@@ -4,19 +4,21 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes, createHash } from 'crypto';
 import {
   Injectable,
+  Logger,
   UnauthorizedException,
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-
+import nodemailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
   private client: OAuth2Client;
 
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
@@ -321,4 +323,111 @@ return {
 
     return user;
   }
+
+  async forgotPassword(email: string) {
+  const genericResponse = {
+    success: true,
+    message:
+      'If an account with that email exists, a password reset link has been sent.',
+  };
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await this.prisma.public_users.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  // Unknown email or Google-only account: same response, no email.
+  if (!user || !user.password_hash) return genericResponse;
+
+  const token = randomBytes(32).toString('hex');
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+  await this.prisma.public_users.update({
+    where: { id: user.id },
+    data: {
+      reset_token_hash: tokenHash,
+      reset_token_expires_at: expiresAt,
+    },
+  });
+
+  const frontendUrl =
+    this.configService.get<string>('FRONTEND_URL') ?? 'http://localhost:8081';
+  const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+  try {
+    await this.sendResetEmail(user.email, resetLink);
+  } catch (err) {
+    this.logger.error('Failed to send password reset email', err as Error);
+  }
+
+  return genericResponse;
+}
+
+async resetPassword(token: string, newPassword: string) {
+  const tokenHash = createHash('sha256').update(token).digest('hex');
+
+  const user = await this.prisma.public_users.findFirst({
+    where: {
+      reset_token_hash: tokenHash,
+      reset_token_expires_at: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new BadRequestException('Reset link is invalid or has expired');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  await this.prisma.public_users.update({
+    where: { id: user.id },
+    data: {
+      password_hash: passwordHash,
+      reset_token_hash: null,
+      reset_token_expires_at: null,
+      hashed_refresh_token: null,
+    },
+  });
+
+  return {
+    success: true,
+    message: 'Password has been reset. Please sign in.',
+  };
+}
+
+private async sendResetEmail(to: string, resetLink: string) {
+  const emailUser = this.configService.get<string>('SMTP_USER');
+  const emailPassword = this.configService.get<string>('SMTP_APP_PASSWORD');
+
+  if (!emailUser || !emailPassword) {
+    if (this.configService.get<string>('NODE_ENV') !== 'production') {
+      this.logger.log(`Password reset link for ${to}: ${resetLink}`);
+      return;
+    }
+
+    throw new Error('Google Workspace SMTP is not configured');
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: emailUser,
+      pass: emailPassword,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"MakersFlow" <${emailUser}>`,
+    to,
+    subject: 'Reset your MakersFlow password',
+    html: `
+      <p>We received a request to reset your MakersFlow password.</p>
+      <p><a href="${resetLink}">Reset your password</a></p>
+      <p>This link expires in 30 minutes. If you didn't ask for this, you can ignore this email.</p>
+    `,
+  });
+}
 }

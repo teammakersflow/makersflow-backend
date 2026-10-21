@@ -793,6 +793,8 @@ model public_users {
   avatar_url            String?
   created_at            DateTime?  @default(now()) @db.Timestamptz(6)
   hashed_refresh_token  String?
+  reset_token_hash      String?   @unique
+  reset_token_expires_at   DateTime? @db.Timestamptz(6)
   password_hash         String?
   role                  String     @default("student")
   notifications_enabled Boolean    @default(true)
