@@ -968,6 +968,5 @@ model included_kit_claim_attempts {
   orders                orders             @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([claim_id])
-  @@index([order_id])
   @@schema("public")
 }
