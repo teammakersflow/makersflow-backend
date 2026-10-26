@@ -1209,7 +1209,6 @@ export class PaymentsService {
       where: { id: courseId },
       select: {
         id: true,
-        kit_id: true,
         title: true,
         price: true,
         gst_rate: true,
@@ -1308,7 +1307,7 @@ export class PaymentsService {
           },
         });
 
-        const purchase = await tx.course_purchases.upsert({
+        await tx.course_purchases.upsert({
           where: {
             user_id_course_id: {
               user_id: userId,
@@ -1329,19 +1328,6 @@ export class PaymentsService {
             status: 'active',
           },
         });
-
-        if (course.kit_id) {
-          await tx.included_kit_claims.upsert({
-            where: { course_purchase_id: purchase.id },
-            create: {
-              user_id: userId,
-              course_purchase_id: purchase.id,
-              kit_id: course.kit_id,
-              status: 'pending',
-            },
-            update: {},
-          });
-        }
 
         await this.enrollmentsService.createPaidEnrollment(
           userId,

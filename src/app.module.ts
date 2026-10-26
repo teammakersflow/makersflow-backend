@@ -47,7 +47,6 @@ import { ShippingRatesModule } from './shipping-rates/shipping-rates.module';
 import { ChallengesModule } from './challenges/challenges.module';
 import { QuizAttemptsModule } from './quiz-attempts/quiz-attempts.module';
 import { BillingProfileModule } from './billing-profile/billing-profile.module';
-import { IncludedKitsModule } from './included-kits/included-kits.module';
 
 @Module({
   imports: [
@@ -65,7 +64,6 @@ import { IncludedKitsModule } from './included-kits/included-kits.module';
     WhatsappOtpModule,
     UsersModule,
     BillingProfileModule,
-    IncludedKitsModule,
     ProductsModule,
     CouponsModule,
     OrdersModule,

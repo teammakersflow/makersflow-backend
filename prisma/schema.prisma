@@ -146,7 +146,6 @@ model course_purchases {
   status         String    @default("active")
   courses        courses   @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   orders         orders?   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  included_kit_claims included_kit_claims[]
   payments       payments? @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([user_id, course_id], map: "uq_course_purchases_user_course")
@@ -174,11 +173,9 @@ model courses {
   gst_rate         Decimal            @default(18) @db.Decimal(5, 2)
   images           String[]           @default([])
   hsn_code         String?            @default("999294")
-  kit_id           String?            @db.Uuid
   certificates     certificates[]
   course_favorites course_favorites[]
   course_purchases course_purchases[]
-  kits             kits?              @relation(fields: [kit_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
   profiles         profiles?          @relation(fields: [instructor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "courses_created_by_fkey")
   enrollments      enrollments[]
   modules          modules[]
@@ -408,9 +405,7 @@ model orders {
   estimated_delivery  DateTime?          @db.Date
   shipment_status     String?
   course_purchases    course_purchases[]
-  included_kit_claims included_kit_claims[]
   invoices            invoices?
-  included_kit_claim_attempts included_kit_claim_attempts[]
   order_items         order_items[]
   coupons             coupons?           @relation(fields: [coupon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payments            payments?          @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -520,7 +515,6 @@ model products {
   weight_kg       Decimal?          @default(0.500) @db.Decimal(6, 3)
   hsn_code        String?           @default("84733099")
   order_items     order_items[]
-  kit_items       kit_items[]
   product_media   product_media[]
   product_reviews product_reviews[]
   wishlist        wishlist[]
@@ -807,9 +801,8 @@ model public_users {
   onboarding_completed  Boolean    @default(false)
   is_banned             Boolean    @default(false)
   updated_at            DateTime?  @default(now()) @db.Timestamptz(6)
-  orders                orders[]   
-  payments              payments[] 
-  included_kit_claims   included_kit_claims[]
+  orders                orders[]
+  payments              payments[]
   profiles              profiles?
 
   @@map("users")
@@ -902,71 +895,5 @@ model challenge_submissions {
 
   @@index([status])
   @@index([created_at])
-  @@schema("public")
-}
-
-model kits {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name        String
-  description String?
-  status      String      @default("active")
-  created_at  DateTime    @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime    @default(now()) @updatedAt @db.Timestamptz(6)
-
-  courses     courses[]
-  kit_items   kit_items[]
-  claims      included_kit_claims[]
-
-  @@schema("public")
-}
-
-model kit_items {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  kit_id     String   @db.Uuid
-  product_id BigInt
-  quantity   Int      @default(1)
-
-  kits       kits     @relation(fields: [kit_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@unique([kit_id, product_id])
-  @@index([product_id])
-  @@schema("public")
-}
-
-model included_kit_claims {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id            String    @db.Uuid
-  course_purchase_id String    @db.Uuid
-  kit_id             String    @db.Uuid
-  order_id           String?   @db.Uuid
-  status             String    @default("pending")
-  created_at         DateTime  @default(now()) @db.Timestamptz(6)
-  updated_at         DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
-  attempts           included_kit_claim_attempts[]
-  users              public_users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  course_purchases   course_purchases @relation(fields: [course_purchase_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  kits               kits            @relation(fields: [kit_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  orders             orders?          @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@unique([course_purchase_id])
-  @@index([user_id])
-  @@index([kit_id])
-  @@schema("public")
-}
-
-model included_kit_claim_attempts {
-  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  claim_id              String   @db.Uuid
-  order_id              String   @unique @db.Uuid
-  idempotency_key       String   @unique
-  status                String   @default("pending")
-  created_at            DateTime @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime @default(now()) @updatedAt @db.Timestamptz(6)
-
-  included_kit_claims   included_kit_claims @relation(fields: [claim_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  orders                orders             @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([claim_id])
   @@schema("public")
 }
