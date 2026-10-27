@@ -6,13 +6,15 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 
 @Injectable()
 export class EnrollmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+    private readonly storage: StorageService,) {}
 
   // =========================
   // ADMIN METHODS
@@ -106,6 +108,12 @@ export class EnrollmentsService {
   // STUDENT METHODS
   // =========================
 
+  private async signCourse<T extends { courses?: { thumbnail_url: string | null } | null }>(row: T): Promise<T> {
+    if (!row.courses?.thumbnail_url) return row;
+    const signed = await this.storage.createSignedImageUrl(row.courses.thumbnail_url);
+    return { ...row, courses: { ...row.courses, thumbnail_url: signed ?? row.courses.thumbnail_url } };
+  }
+
   async findMyEnrollments(userId: string) {
     return this.prisma.enrollments.findMany({
       where: {
@@ -128,7 +136,7 @@ export class EnrollmentsService {
       orderBy: {
         enrolled_at: 'desc',
       },
-    });
+    }).then((rows) => Promise.all(rows.map((r) => this.signCourse(r))));
   }
 
   async findMyEnrollment(
@@ -157,7 +165,7 @@ export class EnrollmentsService {
         },
       },
     },
-  });
+  }).then((r) => (r ? this.signCourse(r) : r));
 }
   async enrollInFreeCourse(
     userId: string,
