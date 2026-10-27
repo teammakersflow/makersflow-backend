@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateKitDto, KitItemDto, UpdateKitDto } from './dto/kit.dto';
 
 const KIT_INCLUDE = {
@@ -14,7 +15,10 @@ const KIT_INCLUDE = {
 
 @Injectable()
 export class KitsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   /** Checks the products exist and aren't duplicated, then returns rows ready to insert. */
   private async buildItems(kitId: string, items: KitItemDto[]) {
@@ -105,15 +109,15 @@ export class KitsService {
     }
 
     const isPaid = course.is_free === false && Number(course.price ?? 0) > 0;
-    const items = course.kits.kit_items.map((ki) => ({
+    const items = await Promise.all(course.kits.kit_items.map(async (ki) => ({
       product_id: String(ki.product_id),
       title: ki.products.title,
       slug: ki.products.slug,
       quantity: ki.quantity,
       price: ki.products.price,
-      image: ki.products.thumbnail_url ?? ki.products.images[0] ?? null,
+      image: await this.storage.createSignedImageUrl(ki.products.thumbnail_url ?? ki.products.images[0] ?? null),
       available: ki.products.in_stock !== false && ki.products.stock >= ki.quantity,
-    }));
+    })));
 
     return serialize({
       course_id: courseId,
