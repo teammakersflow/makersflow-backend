@@ -1,3 +1,4 @@
+import { StorageService } from '../storage/storage.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EnrollmentsService } from './enrollments.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,6 +9,7 @@ describe('EnrollmentsService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: StorageService, useValue: { createSignedImageUrl: jest.fn(async (u: string) => u) } },
         EnrollmentsService,
         {
           provide: PrismaService,
