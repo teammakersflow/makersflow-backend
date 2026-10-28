@@ -1,41 +1,64 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  Get,
-  Headers,
-  Param,
-  ParseUUIDPipe,
   Post,
-  Request,
+  Get,
+  Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ClaimKitDto } from './dto/claim-kit.dto';
+import { ClaimIncludedKitDto } from './dto/claim-included-kit.dto';
+import { VerifyIncludedKitPaymentDto } from './dto/verify-included-kit-payment.dto';
 import { IncludedKitsService } from './included-kits.service';
 
-@Controller('included-kits')
+@ApiTags('Included Kits')
 @ApiBearerAuth()
+@Controller('included-kits')
 @UseGuards(JwtAuthGuard)
 export class IncludedKitsController {
-  constructor(private readonly service: IncludedKitsService) {}
+  constructor(
+    private readonly includedKitsService: IncludedKitsService,
+  ) {}
 
   @Get('my')
-  findMine(@Request() req: any) {
-    return this.service.findMine(req.user.id);
+  findMine(@Req() req: Request) {
+    return this.includedKitsService.findMine((req as any).user.id);
   }
 
-  @Post(':claimId/claim')
-  claim(
-    @Request() req: any,
-    @Param('claimId', ParseUUIDPipe) claimId: string,
-    @Headers('idempotency-key') idempotencyKey: string | undefined,
-    @Body() dto: ClaimKitDto,
+  // Existing method — keep it unchanged
+  @Post('claim')
+  async claim(
+    @Req() req: Request,
+    @Body() dto: ClaimIncludedKitDto,
   ) {
-    if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 128) {
-      throw new BadRequestException('Idempotency-Key header (8-128 chars) is required');
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException(
+        'User is not authenticated. Please login first.',
+      );
     }
-    return this.service.claim(req.user.id, claimId, idempotencyKey, dto.shipping_address);
+
+    return this.includedKitsService.claim(userId, dto);
+  }
+
+  // ADD THIS METHOD immediately after claim()
+  @Post('verify-payment')
+  async verifyPayment(
+    @Req() req: Request,
+    @Body() dto: VerifyIncludedKitPaymentDto,
+  ) {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      throw new UnauthorizedException(
+        'User is not authenticated. Please login first.',
+      );
+    }
+
+    return this.includedKitsService.verifyPayment(userId, dto);
   }
 }

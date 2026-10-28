@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -82,5 +83,43 @@ export class ShippingAddressesService {
         id,
       },
     });
+  }
+  async validateForKitCheckout(
+    userId: string,
+    addressId: bigint,
+  ) {
+    const address = await this.prisma.shipping_addresses.findFirst({
+      where: {
+        id: addressId,
+        user_id: userId,
+      },
+    });
+
+    if (!address) {
+      throw new NotFoundException(
+        'Shipping address not found',
+      );
+    }
+
+    const requiredFields = [
+      address.full_name,
+      address.address_line1,
+      address.city,
+      address.state,
+      address.postal_code,
+      address.phone,
+    ];
+
+    if (
+      requiredFields.some(
+        (value) => !value || !String(value).trim(),
+      )
+    ) {
+      throw new BadRequestException(
+        'Please complete all required shipping address fields before claiming your kit',
+      );
+    }
+
+    return address;
   }
 }
