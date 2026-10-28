@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from '../storage/storage.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -23,6 +24,7 @@ describe('ProductsService', () => {
           provide: PrismaService,
           useValue: prismaMock,
         },
+        { provide: StorageService, useValue: { createSignedImageUrl: jest.fn() } },
       ],
     }).compile();
 
