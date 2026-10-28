@@ -336,8 +336,8 @@ return {
     where: { email: normalizedEmail },
   });
 
-  // Unknown email or Google-only account: same response, no email.
-  if (!user || !user.password_hash) return genericResponse;
+  // Unknown email: return the same generic response without sending an email.
+  if (!user) return genericResponse;
 
   const token = randomBytes(32).toString('hex');
   const tokenHash = createHash('sha256').update(token).digest('hex');

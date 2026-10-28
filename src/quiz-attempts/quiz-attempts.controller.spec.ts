@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { QuizAttemptsController } from './quiz-attempts.controller';
 import { QuizAttemptsService } from './quiz-attempts.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EnrollmentsService } from '../enrollments/enrollments.service';
 
 describe('QuizAttemptsController', () => {
   let controller: QuizAttemptsController;
@@ -15,6 +16,7 @@ describe('QuizAttemptsController', () => {
     provide: PrismaService,
     useValue: {},
   },
+  { provide: EnrollmentsService, useValue: { findMyEnrollment: jest.fn() } },
 ],
     }).compile();
 
