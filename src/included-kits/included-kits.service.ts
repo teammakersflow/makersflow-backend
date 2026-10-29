@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
 import Razorpay from 'razorpay';
-
+import { StorageService } from '../storage/storage.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ShippingAddressesService } from '../shipping-addresses/shipping-addresses.service';
 import { ShippingRatesService } from '../shipping-rates/shipping-rates.service';
@@ -26,6 +26,7 @@ export class IncludedKitsService {
     private readonly configService: ConfigService,
     private readonly shippingAddressesService: ShippingAddressesService,
     private readonly shippingRatesService: ShippingRatesService,
+    private readonly storage: StorageService,
   ) {
     const keyId = this.configService.get<string>('RAZORPAY_KEY_ID');
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
@@ -720,11 +721,79 @@ if (shippingAmount.isZero()) {
         'Payment verified and stock deducted. The order is awaiting fulfillment.',
     };
   }
-  findMine(userId: string) {
-    return this.prisma.included_kit_claims.findMany({
-      where: { user_id: userId, status: 'pending' },
-      include: { kits: { include: { kit_items: true } } },
+  async findMine(userId: string) {
+    const claims = await this.prisma.included_kit_claims.findMany({
+      where: { user_id: userId },
+      include: {
+        course_purchases: {
+          include: {
+            courses: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+        },
+        kits: {
+          include: {
+            kit_items: {
+              include: {
+                products: {
+                  select: {
+                    id: true,
+                    title: true,
+                    thumbnail_url: true,
+                    images: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        orders: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
       orderBy: { created_at: 'desc' },
     });
+
+    return Promise.all(
+      claims.map(async (claim) => ({
+        id: claim.id,
+        status: claim.status,
+        course_purchase_id: claim.course_purchase_id,
+        course: {
+          id: claim.course_purchases.courses.id.toString(),
+          title: claim.course_purchases.courses.title,
+        },
+        kit: {
+          id: claim.kits.id,
+          name: claim.kits.name,
+          items: await Promise.all(
+            claim.kits.kit_items.map(async (item) => ({
+              product_id: item.products.id.toString(),
+              title: item.products.title,
+              quantity: item.quantity,
+              thumbnail_url: await this.storage.createSignedImageUrl(
+                item.products.thumbnail_url ??
+                  item.products.images[0] ??
+                  null,
+              ),
+            })),
+          ),
+        },
+        order: claim.orders
+          ? {
+              id: claim.orders.id,
+              status: claim.orders.status,
+            }
+          : null,
+        created_at: claim.created_at,
+      })),
+    );
   }
 }
