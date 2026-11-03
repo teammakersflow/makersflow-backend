@@ -1,5 +1,7 @@
 import {
+  IsArray,
   IsNumber,
+  IsOptional,
   IsString,
   Min,
 } from 'class-validator';
@@ -17,4 +19,9 @@ export class ShippingRateDto {
 
   @IsString()
   product_type!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  product_ids?: string[];
 }
