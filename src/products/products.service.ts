@@ -137,40 +137,55 @@ async findOne(id: bigint) {
   }
 
   async deductStock(
-  productId: bigint,
-  quantity: number,
-  tx: any = this.prisma,
-) {
-  if (quantity <= 0) {
-    throw new BadRequestException(
-      'Quantity must be greater than 0',
-    );
-  }
+    productId: bigint,
+    quantity: number,
+    tx: any = this.prisma,
+  ) {
+    if (quantity <= 0) {
+      throw new BadRequestException(
+        'Quantity must be greater than 0',
+      );
+    }
 
-  const result = await tx.products.updateMany({
-    where: {
-      id: productId,
-      stock_quantity: {
-        gte: quantity,
+    // Negative stock quantity means unlimited inventory.
+    const product = await tx.products.findUnique({
+      where: { id: productId },
+      select: { id: true, stock_quantity: true },
+    });
+
+    if (!product) {
+      throw new BadRequestException('Product not found');
+    }
+
+    if (product.stock_quantity < 0) {
+      return tx.products.findUnique({
+        where: { id: productId },
+      });
+    }
+
+    // Tracked inventory: deduct atomically to prevent overselling.
+    const result = await tx.products.updateMany({
+      where: {
+        id: productId,
+        stock_quantity: {
+          gte: quantity,
+        },
       },
-    },
-    data: {
-      stock_quantity: {
-        decrement: quantity,
+      data: {
+        stock_quantity: {
+          decrement: quantity,
+        },
       },
-    },
-  });
+    });
 
-  if (result.count === 0) {
-    throw new BadRequestException(
-      'Insufficient inventory',
-    );
+    if (result.count === 0) {
+      throw new BadRequestException(
+        'Insufficient inventory',
+      );
+    }
+
+    return tx.products.findUnique({
+      where: { id: productId },
+    });
   }
-
-  return tx.products.findUnique({
-    where: {
-      id: productId,
-    },
-  });
-}
 }
