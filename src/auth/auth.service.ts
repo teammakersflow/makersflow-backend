@@ -13,6 +13,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import nodemailer from 'nodemailer';
+import { renderWelcomeEmail } from '../mail/templates/welcome';
 
 @Injectable()
 export class AuthService {
@@ -71,6 +72,9 @@ async registerWithPassword(
       role: true,
     },
   });
+
+  // Not awaited: the email must never delay or fail sign-up.
+  void this.sendWelcomeEmail(user);
 
   return {
     success: true,
@@ -164,6 +168,9 @@ async loginWithPassword(email: string, password: string) {
           avatar_url: payload.picture,
         },
       });
+
+      // First Google sign-in created the account. Not awaited, never fails login.
+      void this.sendWelcomeEmail(user);
     } else {
       user = await this.prisma.public_users.update({
         where: {
@@ -397,12 +404,66 @@ async resetPassword(token: string, newPassword: string) {
 }
 
 private async sendResetEmail(to: string, resetLink: string) {
+  await this.sendMail(
+    {
+      to,
+      subject: 'Reset your MakersFlow password',
+      html: `
+      <p>We received a request to reset your MakersFlow password.</p>
+      <p><a href="${resetLink}">Reset your password</a></p>
+      <p>This link expires in 30 minutes. If you didn't ask for this, you can ignore this email.</p>
+    `,
+    },
+    `Password reset link for ${to}: ${resetLink}`,
+  );
+}
+
+/*
+ * Welcome email for a newly created account (email sign-up or first Google
+ * sign-in). Callers do not await it. It never throws: any failure is logged
+ * with the user id only, so sign-up is never blocked or failed by email.
+ */
+private async sendWelcomeEmail(user: {
+  id: string;
+  email: string;
+  full_name: string | null;
+}): Promise<void> {
+  try {
+    const appUrl =
+      this.configService.get<string>('FRONTEND_URL') ?? 'http://localhost:8081';
+
+    const email = renderWelcomeEmail({
+      name: user.full_name,
+      email: user.email,
+      appUrl,
+    });
+
+    await this.sendMail(
+      { to: user.email, ...email },
+      `Welcome email not sent for user ${user.id}: SMTP is not configured`,
+    );
+  } catch (err) {
+    this.logger.error(
+      `Welcome email failed for user ${user.id}`,
+      err instanceof Error ? err.stack : String(err),
+    );
+  }
+}
+
+/*
+ * Send one email through the existing Google Workspace SMTP account.
+ * Outside production, a missing SMTP config only logs `devLog` instead.
+ */
+private async sendMail(
+  message: { to: string; subject: string; html: string; text?: string },
+  devLog: string,
+) {
   const emailUser = this.configService.get<string>('SMTP_USER');
   const emailPassword = this.configService.get<string>('SMTP_APP_PASSWORD');
 
   if (!emailUser || !emailPassword) {
     if (this.configService.get<string>('NODE_ENV') !== 'production') {
-      this.logger.log(`Password reset link for ${to}: ${resetLink}`);
+      this.logger.log(devLog);
       return;
     }
 
@@ -421,13 +482,7 @@ private async sendResetEmail(to: string, resetLink: string) {
 
   await transporter.sendMail({
     from: `"MakersFlow" <${emailUser}>`,
-    to,
-    subject: 'Reset your MakersFlow password',
-    html: `
-      <p>We received a request to reset your MakersFlow password.</p>
-      <p><a href="${resetLink}">Reset your password</a></p>
-      <p>This link expires in 30 minutes. If you didn't ask for this, you can ignore this email.</p>
-    `,
+    ...message,
   });
 }
 }
