@@ -7,6 +7,10 @@ import {
 import { randomUUID } from 'crypto';
 
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  activeEnrollmentWhere,
+  isEnrollmentActive,
+} from '../enrollments/enrollment-access';
 
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { CreateStudentCertificateDto } from './dto/create-student-certificate.dto';
@@ -77,18 +81,16 @@ export class CertificatesService {
   ) {
     const courseId = BigInt(dto.course_id);
 
-    // Verify that the student is enrolled.
+    // Verify that the student currently has access to the course.
+    // B-2 (2026-11-11): was "any enrollment row exists" (pending, failed,
+    // refunded and expired rows passed). Now the shared entitlement rule.
+    const now = new Date();
     const enrollment =
-      await this.prisma.enrollments.findUnique({
-        where: {
-          user_id_course_id: {
-            user_id: userId,
-            course_id: courseId,
-          },
-        },
+      await this.prisma.enrollments.findFirst({
+        where: activeEnrollmentWhere(userId, courseId, now),
       });
 
-    if (!enrollment) {
+    if (!enrollment || !isEnrollmentActive(enrollment, now)) {
       throw new ForbiddenException(
         'You are not enrolled in this course',
       );

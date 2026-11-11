@@ -8,6 +8,10 @@ import {
 
 import { PrismaService } from '../prisma/prisma.service';
 import { StreaksService } from '../streaks/streaks.service';
+import {
+  activeEnrollmentWhere,
+  isEnrollmentActive,
+} from '../enrollments/enrollment-access';
 
 import { CreateLessonProgressDto } from './dto/create-lesson-progress.dto';
 import { UpdateLessonProgressDto } from './dto/update-lesson-progress.dto';
@@ -23,21 +27,20 @@ export class LessonProgressService {
   // SECURITY HELPERS
   // =========================
 
+  // B-2 (2026-11-11): was "any enrollment row exists", so pending, failed,
+  // refunded and expired enrollments could record progress. Now uses the
+  // shared entitlement rule (enrollments/enrollment-access.ts).
   private async verifyEnrollment(
     userId: string,
     courseId: bigint,
   ) {
+    const now = new Date();
     const enrollment =
-      await this.prisma.enrollments.findUnique({
-        where: {
-          user_id_course_id: {
-            user_id: userId,
-            course_id: courseId,
-          },
-        },
+      await this.prisma.enrollments.findFirst({
+        where: activeEnrollmentWhere(userId, courseId, now),
       });
 
-    if (!enrollment) {
+    if (!enrollment || !isEnrollmentActive(enrollment, now)) {
       throw new ForbiddenException(
         'You are not enrolled in this course',
       );

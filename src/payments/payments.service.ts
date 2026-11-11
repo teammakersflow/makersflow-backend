@@ -14,6 +14,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { CreateRazorpayOrderDto } from './dto/create-razorpay-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
+import { isEnrollmentActive } from '../enrollments/enrollment-access';
 import { ProductsService } from '../products/products.service';
 import { CouponsService } from '../coupons/coupons.service';
 import Razorpay from 'razorpay';
@@ -130,9 +131,15 @@ export class PaymentsService {
         },
       });
 
+      // B-2 (2026-11-11): block only when the user really has access now.
+      // An expired, refunded or otherwise inactive enrollment may be
+      // re-purchased; fulfilment (createPaidEnrollment) then reactivates it
+      // with a fresh expiry. With no enrollment row at all, an access-granted
+      // course_purchases row still blocks, as before.
+      const hasActiveEnrollment = isEnrollmentActive(existingEnrollment);
       if (
-        existingEnrollment?.payment_status === 'completed' ||
-        existingPurchase?.access_granted === true
+        hasActiveEnrollment ||
+        (!existingEnrollment && existingPurchase?.access_granted === true)
       ) {
         throw new BadRequestException(
           'You already have access to this course',

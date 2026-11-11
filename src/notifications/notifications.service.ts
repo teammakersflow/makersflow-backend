@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
@@ -70,5 +70,21 @@ async markAsRead(userId: string, id: string) {
       is_read: true,
     },
   });
+}
+
+/** Deletes one of the caller's own notifications; 404 if it is not theirs. */
+async deleteMine(userId: string, id: string) {
+  const result = await this.prisma.notifications.deleteMany({
+    where: {
+      id,
+      user_id: userId,
+    },
+  });
+
+  if (result.count === 0) {
+    throw new NotFoundException('Notification not found');
+  }
+
+  return { success: true };
 }
 }
