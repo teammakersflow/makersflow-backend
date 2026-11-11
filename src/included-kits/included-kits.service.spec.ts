@@ -122,6 +122,7 @@ function setup() {
     payments: {
       findUnique: jest.fn(),
       findFirst: jest.fn().mockResolvedValue(null),
+      findMany: jest.fn().mockResolvedValue([]),
       create: jest.fn().mockResolvedValue({}),
       update: jest.fn().mockResolvedValue({}),
     },
@@ -657,36 +658,50 @@ describe('IncludedKitsService.verifyPayment', () => {
 });
 
 describe('IncludedKitsService.findMine', () => {
+  const claim = (
+    id: string,
+    status: string,
+    order: null | {
+      shipping_address: unknown;
+      razorpay_order_id: string | null;
+    },
+  ) => ({
+    id,
+    status,
+    course_purchase_id: PURCHASE_ID,
+    course_purchases: {
+      courses: { id: BigInt(45), title: 'Kit test course' },
+    },
+    kits: {
+      id: 'kit-1',
+      name: 'IOT',
+      kit_items: [
+        {
+          quantity: 1,
+          products: {
+            id: BigInt(7),
+            title: 'Arduino Uno',
+            thumbnail_url: null,
+            images: [],
+          },
+        },
+      ],
+    },
+    orders: order && { id: `order-${id}`, status: 'pending', ...order },
+    created_at: new Date('2026-11-11T00:00:00Z'),
+  });
+
   it('returns shipping_address_id from the order snapshot, or null for older orders', async () => {
     const t = setup();
-    const claim = (id: string, shipping_address: unknown) => ({
-      id,
-      status: 'pending',
-      course_purchase_id: PURCHASE_ID,
-      course_purchases: {
-        courses: { id: BigInt(45), title: 'Kit test course' },
-      },
-      kits: {
-        id: 'kit-1',
-        name: 'IOT',
-        kit_items: [
-          {
-            quantity: 1,
-            products: {
-              id: BigInt(7),
-              title: 'Arduino Uno',
-              thumbnail_url: null,
-              images: [],
-            },
-          },
-        ],
-      },
-      orders: { id: `order-${id}`, status: 'pending', shipping_address },
-      created_at: new Date('2026-11-11T00:00:00Z'),
-    });
     t.prisma.included_kit_claims.findMany.mockResolvedValue([
-      claim('new', { id: '5', city: 'Hyderabad' }),
-      claim('old', { city: 'Hyderabad' }),
+      claim('new', 'pending', {
+        shipping_address: { id: '5', city: 'Hyderabad' },
+        razorpay_order_id: null,
+      }),
+      claim('old', 'pending', {
+        shipping_address: { city: 'Hyderabad' },
+        razorpay_order_id: null,
+      }),
     ]);
 
     const [withId, withoutId] = await t.service.findMine('user-1');
@@ -694,5 +709,69 @@ describe('IncludedKitsService.findMine', () => {
     expect(withId.shipping_address_id).toBe('5');
     expect(withoutId.shipping_address_id).toBeNull();
     expect(withId.course).toEqual({ id: '45', title: 'Kit test course' });
+  });
+
+  it('returns payment_status for each claim from one payments query', async () => {
+    const t = setup();
+    const address = { id: '5' };
+    t.prisma.included_kit_claims.findMany.mockResolvedValue([
+      claim('unclaimed', 'pending', null),
+      claim('free', 'fulfilled', {
+        shipping_address: address,
+        razorpay_order_id: null,
+      }),
+      claim('unpaid', 'pending', {
+        shipping_address: address,
+        razorpay_order_id: 'order_a',
+      }),
+      claim('paid', 'pending', {
+        shipping_address: address,
+        razorpay_order_id: 'order_b',
+      }),
+      claim('failed', 'pending', {
+        shipping_address: address,
+        razorpay_order_id: 'order_c',
+      }),
+      claim('norow', 'pending', {
+        shipping_address: address,
+        razorpay_order_id: 'order_d',
+      }),
+    ]);
+    t.prisma.payments.findMany.mockResolvedValue([
+      { razorpay_order_id: 'order_a', status: 'pending' },
+      { razorpay_order_id: 'order_b', status: 'captured' },
+      { razorpay_order_id: 'order_c', status: 'failed' },
+    ]);
+
+    const result = await t.service.findMine('user-1');
+
+    expect(result.map((c) => [c.id, c.payment_status])).toEqual([
+      ['unclaimed', null],
+      ['free', 'not_required'],
+      ['unpaid', 'pending'],
+      ['paid', 'captured'],
+      ['failed', 'failed'],
+      ['norow', 'pending'],
+    ]);
+    expect(t.prisma.payments.findMany).toHaveBeenCalledTimes(1);
+    expect(t.prisma.payments.findMany).toHaveBeenCalledWith({
+      where: {
+        razorpay_order_id: { in: ['order_a', 'order_b', 'order_c', 'order_d'] },
+      },
+      select: { razorpay_order_id: true, status: true },
+    });
+  });
+
+  it('skips the payments query when no claim has a Razorpay order', async () => {
+    const t = setup();
+    t.prisma.included_kit_claims.findMany.mockResolvedValue([
+      claim('unclaimed', 'pending', null),
+    ]);
+
+    const [only] = await t.service.findMine('user-1');
+
+    expect(only.payment_status).toBeNull();
+    expect(only.order).toBeNull();
+    expect(t.prisma.payments.findMany).not.toHaveBeenCalled();
   });
 });

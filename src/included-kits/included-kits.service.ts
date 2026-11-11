@@ -902,11 +902,52 @@ export class IncludedKitsService {
             id: true,
             status: true,
             shipping_address: true,
+            razorpay_order_id: true,
           },
         },
       },
       orderBy: { created_at: 'desc' },
     });
+
+    // One query for the payment rows of every claim order that has one.
+    const razorpayOrderIds = claims
+      .map((claim) => claim.orders?.razorpay_order_id)
+      .filter((id): id is string => !!id);
+
+    const payments = razorpayOrderIds.length
+      ? await this.prisma.payments.findMany({
+          where: { razorpay_order_id: { in: razorpayOrderIds } },
+          select: { razorpay_order_id: true, status: true },
+        })
+      : [];
+
+    const paymentStatusByOrder = new Map(
+      payments.map((payment) => [payment.razorpay_order_id, payment.status]),
+    );
+
+    /*
+     * payment_status for the claim's current order:
+     *   null           no order yet (claim not started)
+     *   'not_required' free shipping, no Razorpay order
+     *   'pending'      Razorpay order created, payment not recorded
+     *   'captured'     payment recorded as captured (paid; if the claim is
+     *                  still pending, it is waiting for reconciliation)
+     *   'failed'       payment recorded as failed
+     * A capture that was never verified shows 'pending' until the student
+     * retries with the same idempotency key, which records it.
+     */
+    const paymentStatusOf = (
+      order: { razorpay_order_id: string | null } | null,
+    ) => {
+      if (!order) return null;
+      if (!order.razorpay_order_id) return 'not_required';
+
+      const status = paymentStatusByOrder.get(order.razorpay_order_id);
+
+      if (status === 'captured' || status === 'failed') return status;
+
+      return 'pending';
+    };
 
     return Promise.all(
       claims.map(async (claim) => {
@@ -950,6 +991,7 @@ export class IncludedKitsService {
             ),
           },
           shipping_address_id: shippingAddressId,
+          payment_status: paymentStatusOf(claim.orders),
           order: claim.orders
             ? {
                 id: claim.orders.id,
