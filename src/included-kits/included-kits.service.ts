@@ -16,7 +16,6 @@ import { ShippingRatesService } from '../shipping-rates/shipping-rates.service';
 import { ClaimIncludedKitDto } from './dto/claim-included-kit.dto';
 import { VerifyIncludedKitPaymentDto } from './dto/verify-included-kit-payment.dto';
 
-
 @Injectable()
 export class IncludedKitsService {
   private readonly razorpay: Razorpay;
@@ -32,9 +31,7 @@ export class IncludedKitsService {
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
 
     if (!keyId || !keySecret) {
-      throw new Error(
-        'RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required',
-      );
+      throw new Error('RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required');
     }
 
     this.razorpay = new Razorpay({
@@ -89,9 +86,7 @@ export class IncludedKitsService {
     });
 
     if (!purchase) {
-      throw new NotFoundException(
-        'Eligible course purchase not found',
-      );
+      throw new NotFoundException('Eligible course purchase not found');
     }
 
     const kit = purchase.courses.kits;
@@ -110,46 +105,145 @@ export class IncludedKitsService {
       }
     }
 
-    const address =
-      await this.shippingAddressesService.validateForKitCheckout(
-        userId,
-        BigInt(addressId),
-      );
+    const address = await this.shippingAddressesService.validateForKitCheckout(
+      userId,
+      BigInt(addressId),
+    );
 
-    const existingClaim =
-      await this.prisma.included_kit_claims.findUnique({
-        where: { course_purchase_id: purchase.id },
-        include: { attempts: true },
-      });
+    const existingClaim = await this.prisma.included_kit_claims.findUnique({
+      where: { course_purchase_id: purchase.id },
+      include: { attempts: true },
+    });
 
     const previousAttempt = existingClaim?.attempts.find(
       (attempt) => attempt.idempotency_key === idempotencyKey,
     );
 
-    if (previousAttempt) {
-      const previousOrder = await this.prisma.orders.findUnique({
-        where: { id: previousAttempt.order_id },
-        select: {
-          id: true,
-          total_amount: true,
-          status: true,
-          razorpay_order_id: true,
-        },
-      });
 
-      if (!previousOrder) {
-        throw new NotFoundException(
-          'The previous included kit order was not found',
+if (previousAttempt) {
+  const previousOrder = await this.prisma.orders.findUnique({
+    where: { id: previousAttempt.order_id },
+    select: {
+      id: true,
+      total_amount: true,
+      status: true,
+      razorpay_order_id: true,
+      shipping_address: true,
+    },
+  });
+
+  if (!previousOrder) {
+    throw new NotFoundException(
+      'The previous included kit order was not found',
+    );
+  }
+
+  const previousPayment = previousOrder.razorpay_order_id
+    ? await this.prisma.payments.findUnique({
+        where: {
+          razorpay_order_id: previousOrder.razorpay_order_id,
+        },
+        select: {
+          amount: true,
+          status: true,
+        },
+      })
+    : null;
+
+  const alreadyFulfilled = existingClaim?.status === 'fulfilled';
+
+  let providerPaymentCaptured = false;
+  let providerOrderStatus: 'created' | 'attempted' | 'paid' | null = null;
+
+  if (previousOrder.razorpay_order_id && !alreadyFulfilled) {
+    try {
+      const razorpayOrder = await this.razorpay.orders.fetch(
+        previousOrder.razorpay_order_id,
+      );
+
+      providerOrderStatus = razorpayOrder.status;
+
+      const razorpayPayments =
+        await this.razorpay.orders.fetchPayments(
+          previousOrder.razorpay_order_id,
+        );
+
+      providerPaymentCaptured = razorpayPayments.items.some(
+        (payment) =>
+          payment.status === 'captured' &&
+          payment.order_id === previousOrder.razorpay_order_id &&
+          payment.currency === 'INR' &&
+          payment.amount === Math.round(
+            Number(previousPayment?.amount ?? previousOrder.total_amount) *
+              100,
+          ),
+      );
+
+      if (
+        razorpayOrder.status === 'paid' &&
+        !providerPaymentCaptured
+      ) {
+        throw new ConflictException(
+          'Razorpay reports this order as paid, but no matching captured payment was found. Manual reconciliation is required.',
         );
       }
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
 
-      return {
-        claimId: previousAttempt.claim_id,
-        attemptId: previousAttempt.id,
-        order: previousOrder,
-        reused: true,
-      };
+      throw new ConflictException(
+        'Unable to confirm the existing Razorpay order status. Please retry later or contact support. No new payment order was created.',
+      );
     }
+  }
+
+  const paymentCaptured =
+    previousPayment?.status === 'captured' ||
+    providerPaymentCaptured;
+
+  const requiresReconciliation =
+    paymentCaptured && !alreadyFulfilled;
+
+  const shippingAmount = Number(
+    previousPayment?.amount ?? previousOrder.total_amount,
+  );
+
+  const paymentRequired =
+    !!previousOrder.razorpay_order_id &&
+    !paymentCaptured &&
+    !alreadyFulfilled &&
+    providerOrderStatus !== 'paid';
+
+  return {
+    claimId: previousAttempt.claim_id,
+    attemptId: previousAttempt.id,
+    orderId: previousOrder.id,
+    order: previousOrder,
+    reused: true,
+    paymentRequired,
+    paymentCaptured,
+    alreadyFulfilled,
+    requiresReconciliation,
+    shippingAmount: shippingAmount.toFixed(2),
+    amount: Math.round(shippingAmount * 100),
+    currency: 'INR',
+    razorpayOrderId: paymentRequired
+      ? previousOrder.razorpay_order_id
+      : null,
+    razorpayKeyId: paymentRequired
+      ? this.configService.get<string>('RAZORPAY_KEY_ID')
+      : null,
+    message: alreadyFulfilled
+      ? 'This included kit has already been fulfilled.'
+      : requiresReconciliation
+        ? 'Payment is captured. The order requires fulfillment reconciliation.'
+        : paymentRequired
+          ? 'Existing payment order retrieved. Complete shipping payment.'
+          : 'This included kit does not require shipping payment.',
+  };
+}
+
 
     if (existingClaim?.status === 'fulfilled') {
       throw new ConflictException(
@@ -163,7 +257,7 @@ export class IncludedKitsService {
       );
     }
 
-        if (existingClaim?.status === 'pending') {
+    if (existingClaim?.status === 'pending') {
       throw new ConflictException(
         'A payment for this included kit is already pending. Retry with the original idempotency key or complete/reconcile the existing payment.',
       );
@@ -188,8 +282,7 @@ export class IncludedKitsService {
     }
 
     const totalWeightKg = kit.kit_items.reduce((total, item) => {
-      const weight =
-        item.products.weight_kg ?? item.products.weight;
+      const weight = item.products.weight_kg ?? item.products.weight;
 
       return total + Number(weight) * item.quantity;
     }, 0);
@@ -203,10 +296,7 @@ export class IncludedKitsService {
       }),
     );
 
-    if (
-      !shippingAmount.isFinite() ||
-      shippingAmount.isNegative()
-    ) {
+    if (!shippingAmount.isFinite() || shippingAmount.isNegative()) {
       throw new BadRequestException(
         'Invalid shipping charge returned by shipping provider',
       );
@@ -223,14 +313,10 @@ export class IncludedKitsService {
      * Razorpay amounts are specified in paise.
      */
     if (!shippingAmount.isZero()) {
-      const amountInPaise = Math.round(
-        Number(shippingAmount.toFixed(2)) * 100,
-      );
+      const amountInPaise = Math.round(Number(shippingAmount.toFixed(2)) * 100);
 
       if (!Number.isSafeInteger(amountInPaise) || amountInPaise <= 0) {
-        throw new BadRequestException(
-          'Invalid shipping amount for payment',
-        );
+        throw new BadRequestException('Invalid shipping amount for payment');
       }
 
       const razorpayOrder = await this.razorpay.orders.create({
@@ -250,6 +336,7 @@ export class IncludedKitsService {
     }
 
     const addressSnapshot = {
+      id: addressId,
       full_name: address.full_name,
       address_line1: address.address_line1,
       address_line2: address.address_line2,
@@ -289,9 +376,7 @@ export class IncludedKitsService {
             subtotal: new Prisma.Decimal(0),
             tax_amount: new Prisma.Decimal(0),
             discount_amount: new Prisma.Decimal(0),
-            status: shippingAmount.isZero()
-              ? 'pending_fulfillment'
-              : 'pending',
+            status: shippingAmount.isZero() ? 'pending_fulfillment' : 'pending',
             order_type: 'included_kit',
             shipping_address: addressSnapshot,
             items: kit.kit_items.map((item) => ({
@@ -322,68 +407,66 @@ export class IncludedKitsService {
             claim_id: claim.id,
             order_id: order.id,
             idempotency_key: idempotencyKey,
-            status: shippingAmount.isZero()
-              ? 'pending_fulfillment'
-              : 'pending',
+            status: shippingAmount.isZero() ? 'pending_fulfillment' : 'pending',
           },
         });
 
         // Zero-shipping claims have no Razorpay payment to verify.
-// Reserve inventory and update claim status atomically.
-if (shippingAmount.isZero()) {
-  for (const item of kit.kit_items) {
-    const product = await tx.products.findUnique({
-      where: { id: item.product_id },
-      select: {
-        id: true,
-        stock_quantity: true,
-      },
-    });
+        // Reserve inventory and update claim status atomically.
+        if (shippingAmount.isZero()) {
+          for (const item of kit.kit_items) {
+            const product = await tx.products.findUnique({
+              where: { id: item.product_id },
+              select: {
+                id: true,
+                stock_quantity: true,
+              },
+            });
 
-    if (!product) {
-      throw new NotFoundException(
-        `Kit product ${item.product_id.toString()} was not found`,
-      );
-    }
+            if (!product) {
+              throw new NotFoundException(
+                `Kit product ${item.product_id.toString()} was not found`,
+              );
+            }
 
-    // -1 means unlimited stock.
-    if (product.stock_quantity === -1) {
-      continue;
-    }
+            // -1 means unlimited stock.
+            if (product.stock_quantity === -1) {
+              continue;
+            }
 
-    const updated = await tx.products.updateMany({
-      where: {
-        id: item.product_id,
-        stock_quantity: { gte: item.quantity },
-      },
-      data: {
-        stock_quantity: { decrement: item.quantity },
-      },
-    });
+            const updated = await tx.products.updateMany({
+              where: {
+                id: item.product_id,
+                stock_quantity: { gte: item.quantity },
+              },
+              data: {
+                stock_quantity: { decrement: item.quantity },
+              },
+            });
 
-    if (updated.count !== 1) {
-      throw new ConflictException(
-        `Insufficient stock for product ${item.product_id.toString()}`,
-      );
-    }
-  }
+            if (updated.count !== 1) {
+              throw new ConflictException(
+                `Insufficient stock for product ${item.product_id.toString()}`,
+              );
+            }
+          }
 
-  await tx.included_kit_claims.update({
-    where: { id: claim.id },
-    data: {
-      status: 'fulfilled',
-      updated_at: new Date(),
-    },
-  });
+          await tx.included_kit_claims.update({
+            where: { id: claim.id },
+            data: {
+              status: 'fulfilled',
+              updated_at: new Date(),
+            },
+          });
 
-  await tx.included_kit_claim_attempts.update({
-    where: { id: attempt.id },
-    data: {
-      status: 'fulfilled',
-      updated_at: new Date(),
-    },
-  });
-}
+          await tx.included_kit_claim_attempts.update({
+            where: { id: attempt.id },
+            data: {
+              status: 'fulfilled',
+              updated_at: new Date(),
+            },
+          });
+        }
 
         if (razorpayOrderId) {
           await tx.payments.create({
@@ -408,9 +491,7 @@ if (shippingAmount.isZero()) {
         currency: 'INR',
         paymentRequired: !shippingAmount.isZero(),
         razorpayOrderId,
-        razorpayKeyId: this.configService.get<string>(
-          'RAZORPAY_KEY_ID',
-        ),
+        razorpayKeyId: this.configService.get<string>('RAZORPAY_KEY_ID'),
         message: shippingAmount.isZero()
           ? 'No shipping payment is required. Inventory has been reserved and the order is awaiting fulfillment.'
           : 'Shipping charge calculated. Complete payment using the returned Razorpay order.',
@@ -429,30 +510,20 @@ if (shippingAmount.isZero()) {
     }
   }
 
-  async verifyPayment(
-    userId: string,
-    dto: VerifyIncludedKitPaymentDto,
-  ) {
+  async verifyPayment(userId: string, dto: VerifyIncludedKitPaymentDto) {
     if (!userId) {
       throw new UnauthorizedException('Authentication is required');
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      dto;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = dto;
 
-    if (
-      !razorpay_order_id ||
-      !razorpay_payment_id ||
-      !razorpay_signature
-    ) {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       throw new BadRequestException(
         'All Razorpay verification fields are required',
       );
     }
 
-    const secret = this.configService.get<string>(
-      'RAZORPAY_KEY_SECRET',
-    );
+    const secret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
 
     if (!secret) {
       throw new Error('RAZORPAY_KEY_SECRET is not configured');
@@ -463,9 +534,7 @@ if (shippingAmount.isZero()) {
     });
 
     if (!paymentRecord || paymentRecord.user_id !== userId) {
-      throw new NotFoundException(
-        'Payment order not found for this user',
-      );
+      throw new NotFoundException('Payment order not found for this user');
     }
 
     const expectedSignature = createHmac('sha256', secret)
@@ -479,25 +548,20 @@ if (shippingAmount.isZero()) {
       supplied.length !== expected.length ||
       !timingSafeEqual(supplied, expected)
     ) {
-      throw new BadRequestException(
-        'Invalid Razorpay payment signature',
-      );
+      throw new BadRequestException('Invalid Razorpay payment signature');
     }
 
     /*
      * Verify payment status with Razorpay's API as well.
      * Do not trust the client callback alone.
      */
-    const payment = await this.razorpay.payments.fetch(
-      razorpay_payment_id,
-    );
+    const payment = await this.razorpay.payments.fetch(razorpay_payment_id);
 
     if (
       payment.order_id !== razorpay_order_id ||
       payment.status !== 'captured' ||
       payment.currency !== 'INR' ||
-      Number(payment.amount) !==
-        Math.round(Number(paymentRecord.amount) * 100)
+      Number(payment.amount) !== Math.round(Number(paymentRecord.amount) * 100)
     ) {
       throw new BadRequestException(
         'Razorpay payment is not captured or the payment details do not match',
@@ -513,29 +577,25 @@ if (shippingAmount.isZero()) {
     });
 
     if (!order) {
-      throw new NotFoundException(
-        'Included kit order not found',
-      );
+      throw new NotFoundException('Included kit order not found');
     }
 
     const claim = await this.prisma.included_kit_claims.findFirst({
-    where: {
-      order_id: order.id,
-      user_id: userId,
-    },
-    include: {
-      kits: {
-        include: {
-          kit_items: true,
+      where: {
+        order_id: order.id,
+        user_id: userId,
+      },
+      include: {
+        kits: {
+          include: {
+            kit_items: true,
+          },
         },
       },
-    },
-  });
+    });
 
     if (!claim) {
-      throw new NotFoundException(
-        'Included kit claim not found',
-      );
+      throw new NotFoundException('Included kit claim not found');
     }
 
     /*
@@ -556,9 +616,7 @@ if (shippingAmount.isZero()) {
     });
 
     if (!attempt) {
-      throw new NotFoundException(
-        'Included kit claim attempt not found',
-      );
+      throw new NotFoundException('Included kit claim attempt not found');
     }
 
     /*
@@ -567,127 +625,123 @@ if (shippingAmount.isZero()) {
      */
     try {
       await this.prisma.$transaction(async (tx) => {
-  // Lock this claim row so concurrent verification requests
-  // for the same claim are processed one at a time.
-      const lockedClaims = await tx.$queryRaw<
-        Array<{ id: string; status: string }>
-      >`
+        // Lock this claim row so concurrent verification requests
+        // for the same claim are processed one at a time.
+        const lockedClaims = await tx.$queryRaw<
+          Array<{ id: string; status: string }>
+        >`
         SELECT id, status
         FROM public.included_kit_claims
         WHERE id = ${claim.id}::uuid
         FOR UPDATE
       `;
 
-      const currentClaim = lockedClaims[0];
+        const currentClaim = lockedClaims[0];
 
-      if (!currentClaim) {
-        throw new NotFoundException('Included kit claim not found');
-      }
+        if (!currentClaim) {
+          throw new NotFoundException('Included kit claim not found');
+        }
 
-      if (currentClaim.status === 'fulfilled') {
-        return;
-      }
+        if (currentClaim.status === 'fulfilled') {
+          return;
+        }
 
-      const currentAttempt =
-        await tx.included_kit_claim_attempts.findUnique({
+        const currentAttempt = await tx.included_kit_claim_attempts.findUnique({
           where: { id: attempt.id },
         });
 
-      if (!currentAttempt) {
-        throw new NotFoundException(
-          'Included kit claim attempt not found',
-        );
-      }
+        if (!currentAttempt) {
+          throw new NotFoundException('Included kit claim attempt not found');
+        }
 
-      /*
-       * If this payment ID is already associated with another order,
-       * do not allow it to be reused.
-       */
-      const alreadyUsed = await tx.payments.findFirst({
-        where: {
-          razorpay_payment_id,
-          NOT: { razorpay_order_id },
-        },
-      });
-
-      if (alreadyUsed) {
-        throw new ConflictException(
-          'This Razorpay payment is already associated with another order',
-        );
-      }
-
-      for (const item of claim.kits.kit_items) {
         /*
-         * -1 means unlimited stock.
-         * Finite stock is decremented using a conditional update.
+         * If this payment ID is already associated with another order,
+         * do not allow it to be reused.
          */
-        const product = await tx.products.findUnique({
-          where: { id: item.product_id },
-          select: { id: true, stock_quantity: true },
-        });
-
-        if (!product) {
-          throw new NotFoundException(
-            `Kit product ${item.product_id.toString()} was not found`,
-          );
-        }
-
-        if (product.stock_quantity === -1) {
-          continue;
-        }
-
-        const updated = await tx.products.updateMany({
+        const alreadyUsed = await tx.payments.findFirst({
           where: {
-            id: item.product_id,
-            stock_quantity: { gte: item.quantity },
-          },
-          data: {
-            stock_quantity: { decrement: item.quantity },
+            razorpay_payment_id,
+            NOT: { razorpay_order_id },
           },
         });
 
-        if (updated.count !== 1) {
+        if (alreadyUsed) {
           throw new ConflictException(
-            `Insufficient stock for product ${item.product_id.toString()}`,
+            'This Razorpay payment is already associated with another order',
           );
         }
-      }
 
-      await tx.payments.update({
-        where: { razorpay_order_id },
-        data: {
-          razorpay_payment_id,
-          razorpay_signature,
-          status: 'captured',
-        },
+        for (const item of claim.kits.kit_items) {
+          /*
+           * -1 means unlimited stock.
+           * Finite stock is decremented using a conditional update.
+           */
+          const product = await tx.products.findUnique({
+            where: { id: item.product_id },
+            select: { id: true, stock_quantity: true },
+          });
+
+          if (!product) {
+            throw new NotFoundException(
+              `Kit product ${item.product_id.toString()} was not found`,
+            );
+          }
+
+          if (product.stock_quantity === -1) {
+            continue;
+          }
+
+          const updated = await tx.products.updateMany({
+            where: {
+              id: item.product_id,
+              stock_quantity: { gte: item.quantity },
+            },
+            data: {
+              stock_quantity: { decrement: item.quantity },
+            },
+          });
+
+          if (updated.count !== 1) {
+            throw new ConflictException(
+              `Insufficient stock for product ${item.product_id.toString()}`,
+            );
+          }
+        }
+
+        await tx.payments.update({
+          where: { razorpay_order_id },
+          data: {
+            razorpay_payment_id,
+            razorpay_signature,
+            status: 'captured',
+          },
+        });
+
+        await tx.orders.update({
+          where: { id: order.id },
+          data: {
+            razorpay_payment_id,
+            payment_id: paymentRecord.id,
+            status: 'pending_fulfillment',
+          },
+        });
+
+        await tx.included_kit_claims.update({
+          where: { id: claim.id },
+          data: {
+            status: 'fulfilled',
+            updated_at: new Date(),
+          },
+        });
+
+        await tx.included_kit_claim_attempts.update({
+          where: { id: attempt.id },
+          data: {
+            status: 'fulfilled',
+            updated_at: new Date(),
+          },
+        });
       });
-
-      await tx.orders.update({
-        where: { id: order.id },
-        data: {
-          razorpay_payment_id,
-          payment_id: paymentRecord.id,
-          status: 'pending_fulfillment',
-        },
-      });
-
-      await tx.included_kit_claims.update({
-        where: { id: claim.id },
-        data: {
-          status: 'fulfilled',
-          updated_at: new Date(),
-        },
-      });
-
-      await tx.included_kit_claim_attempts.update({
-        where: { id: attempt.id },
-        data: {
-          status: 'fulfilled',
-          updated_at: new Date(),
-        },
-      });
-    });
-
     } catch (error) {
       // Razorpay confirmed capture, but local fulfillment failed.
       // Record the captured payment outside the rolled-back transaction.
@@ -755,6 +809,7 @@ if (shippingAmount.isZero()) {
           select: {
             id: true,
             status: true,
+            shipping_address: true,
           },
         },
       },
@@ -762,38 +817,51 @@ if (shippingAmount.isZero()) {
     });
 
     return Promise.all(
-      claims.map(async (claim) => ({
-        id: claim.id,
-        status: claim.status,
-        course_purchase_id: claim.course_purchase_id,
-        course: {
-          id: claim.course_purchases.courses.id.toString(),
-          title: claim.course_purchases.courses.title,
-        },
-        kit: {
-          id: claim.kits.id,
-          name: claim.kits.name,
-          items: await Promise.all(
-            claim.kits.kit_items.map(async (item) => ({
-              product_id: item.products.id.toString(),
-              title: item.products.title,
-              quantity: item.quantity,
-              thumbnail_url: await this.storage.createSignedImageUrl(
-                item.products.thumbnail_url ??
-                  item.products.images[0] ??
-                  null,
-              ),
-            })),
-          ),
-        },
-        order: claim.orders
-          ? {
-              id: claim.orders.id,
-              status: claim.orders.status,
-            }
-          : null,
-        created_at: claim.created_at,
-      })),
+      claims.map(async (claim) => {
+        const shippingAddress = claim.orders?.shipping_address;
+
+        const shippingAddressId =
+          shippingAddress &&
+          typeof shippingAddress === 'object' &&
+          !Array.isArray(shippingAddress) &&
+          'id' in shippingAddress
+            ? String(shippingAddress.id)
+            : null;
+
+        return {
+          id: claim.id,
+          status: claim.status,
+          course_purchase_id: claim.course_purchase_id,
+          course: {
+            id: claim.course_purchases.courses.id.toString(),
+            title: claim.course_purchases.courses.title,
+          },
+          kit: {
+            id: claim.kits.id,
+            name: claim.kits.name,
+            items: await Promise.all(
+              claim.kits.kit_items.map(async (item) => ({
+                product_id: item.products.id.toString(),
+                title: item.products.title,
+                quantity: item.quantity,
+                thumbnail_url: await this.storage.createSignedImageUrl(
+                  item.products.thumbnail_url ??
+                    item.products.images[0] ??
+                    null,
+                ),
+              })),
+            ),
+          },
+          shipping_address_id: shippingAddressId,
+          order: claim.orders
+            ? {
+                id: claim.orders.id,
+                status: claim.orders.status,
+              }
+            : null,
+          created_at: claim.created_at,
+        };
+      }),
     );
   }
 }

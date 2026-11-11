@@ -1,3 +1,15 @@
+jest.mock('razorpay', () => {
+  return jest.fn().mockImplementation(() => ({
+    orders: {
+      create: jest.fn(),
+      fetch: jest.fn(),
+      fetchPayments: jest.fn(),
+    },
+    payments: {
+      fetch: jest.fn(),
+    },
+  }));
+});
 import {
   BadRequestException,
   ConflictException,
@@ -13,6 +25,8 @@ describe('IncludedKitsService.claim', () => {
   let configService: any;
   let shippingAddressesService: any;
   let shippingRatesService: any;
+  let storageService: any;
+  let razorpay: any;
 
   const validPurchaseId = '123e4567-e89b-12d3-a456-426614174000';
   const validDto = {
@@ -30,7 +44,9 @@ describe('IncludedKitsService.claim', () => {
         findUnique: jest.fn(),
       },
     };
-
+    storageService = {
+      createSignedImageUrl: jest.fn().mockResolvedValue(null),
+    };
     configService = {
       get: jest.fn((key: string) => {
         if (key === 'RAZORPAY_KEY_ID') return 'test_key_id';
@@ -53,8 +69,9 @@ describe('IncludedKitsService.claim', () => {
       shippingAddressesService,
       shippingRatesService,
     );
+    razorpay = (service as any).razorpay;
   });
-
+  
   it('rejects a request without an authenticated user', async () => {
     await expect(
       service.claim('', validDto),
@@ -186,6 +203,9 @@ it('rejects a new idempotency key when a claim already has a pending payment', a
           findFirst: jest.fn(),
         },
       };
+      storageService = {
+        createSignedImageUrl: jest.fn().mockResolvedValue(null),
+      };
 
       configService = {
         get: jest.fn((key: string) => {
@@ -208,7 +228,9 @@ it('rejects a new idempotency key when a claim already has a pending payment', a
         configService,
         shippingAddressesService,
         shippingRatesService,
+        storageService,
       );
+      razorpay = (service as any).razorpay;
     });
 
     it('rejects verification when authentication is missing', async () => {
