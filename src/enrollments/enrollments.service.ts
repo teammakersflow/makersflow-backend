@@ -146,7 +146,8 @@ export class EnrollmentsService {
 
   /**
    * The user's enrollment in `courseId` ONLY if it currently grants access
-   * (B-2: allow-listed payment_status, not expired; see enrollment-access.ts).
+   * (B-2: allow-listed payment_status; expiry is not enforced for now, see
+   * ENROLLMENT_EXPIRY_ENFORCED in enrollment-access.ts).
    * Returns null otherwise. Every content route gates on this.
    */
   async findMyEnrollment(
@@ -221,8 +222,9 @@ export class EnrollmentsService {
         );
       }
 
-      // B-2: an expired or inactive enrollment in a free course is renewed
-      // with a fresh (no) expiry instead of blocking the student forever.
+      // B-2: an inactive enrollment in a free course (pending, failed, ...; or
+      // expired once expiry is enforced) is renewed with a fresh (no) expiry
+      // instead of blocking the student forever.
       return this.prisma.enrollments.update({
         where: {
           user_id_course_id: {
@@ -273,9 +275,10 @@ export class EnrollmentsService {
 
     if (existingEnrollment) {
       // B-2: re-purchase or renewal. Anything other than a currently active
-      // 'completed' enrollment (pending, refunded, expired, ...) is
-      // reactivated with a fresh expiry. NestJS has no course access period,
-      // so a fresh expiry is "none" (null), the same as a first purchase.
+      // 'completed' enrollment (pending, refunded, ...; expired too once
+      // expiry is enforced) is reactivated with a fresh expiry. NestJS has no
+      // course access period, so a fresh expiry is "none" (null), the same as
+      // a first purchase.
       if (
         existingEnrollment.payment_status !== 'completed' ||
         !isEnrollmentActive(existingEnrollment as EnrollmentAccessFields)

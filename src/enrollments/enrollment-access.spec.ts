@@ -5,6 +5,7 @@
 import { Prisma } from '@prisma/client';
 import {
   ACCESS_PAYMENT_STATUSES,
+  ENROLLMENT_EXPIRY_ENFORCED,
   activeEnrollmentWhere,
   isEnrollmentActive,
 } from './enrollment-access';
@@ -12,6 +13,65 @@ import {
 const NOW = new Date('2026-11-11T12:00:00.000Z');
 const PAST = new Date('2026-11-10T12:00:00.000Z');
 const FUTURE = new Date('2026-12-11T12:00:00.000Z');
+/** The expiry rule, kept for when it is switched on again. */
+const ENFORCED = { enforceExpiry: true };
+
+describe('B-2 expiry policy (owner decision 2026-11-12: not enforced yet)', () => {
+  it('expiry is not enforced by default', () => {
+    expect(ENROLLMENT_EXPIRY_ENFORCED).toBe(false);
+  });
+
+  it('an expired enrollment with an allowed payment_status keeps access', () => {
+    expect(
+      isEnrollmentActive(
+        { payment_status: 'completed', expires_at: PAST },
+        NOW,
+      ),
+    ).toBe(true);
+    expect(
+      isEnrollmentActive(
+        { payment_status: 'free', expires_at: '2020-01-01T00:00:00Z' },
+        NOW,
+      ),
+    ).toBe(true);
+    expect(
+      isEnrollmentActive({ payment_status: 'PAID', expires_at: NOW }, NOW),
+    ).toBe(true);
+  });
+
+  it('the payment_status allow-list is still enforced regardless of expiry', () => {
+    for (const status of [
+      'pending',
+      'failed',
+      'refunded',
+      'cancelled',
+      'success',
+      '',
+    ]) {
+      expect(
+        isEnrollmentActive({ payment_status: status, expires_at: FUTURE }, NOW),
+      ).toBe(false);
+      expect(
+        isEnrollmentActive({ payment_status: status, expires_at: null }, NOW),
+      ).toBe(false);
+    }
+    expect(
+      isEnrollmentActive({ payment_status: null, expires_at: FUTURE }, NOW),
+    ).toBe(false);
+    expect(isEnrollmentActive(null, NOW)).toBe(false);
+  });
+
+  it('the Prisma filter has no expiry condition by default', () => {
+    const where = activeEnrollmentWhere('user-1', 7n, NOW);
+    const and = where.AND as Prisma.enrollmentsWhereInput[];
+    expect(and).toHaveLength(1);
+    expect(
+      JSON.stringify(where, (_k, v: unknown) =>
+        typeof v === 'bigint' ? v.toString() : v,
+      ),
+    ).not.toContain('expires_at');
+  });
+});
 
 describe('B-2 isEnrollmentActive', () => {
   // 1. allowed statuses
@@ -59,18 +119,18 @@ describe('B-2 isEnrollmentActive', () => {
     expect(isEnrollmentActive(undefined, NOW)).toBe(false);
   });
 
-  // 4. expired
-  it('denies access when expires_at is in the past', () => {
+  // 4–6. Expiry rule WHEN ENFORCED (switched off for now; kept tested).
+  it('[enforced] denies access when expires_at is in the past', () => {
     expect(
       isEnrollmentActive(
         { payment_status: 'completed', expires_at: PAST },
         NOW,
+        ENFORCED,
       ),
     ).toBe(false);
   });
 
-  // 5. boundary
-  it('denies access one second after expiry and at the exact expiry instant', () => {
+  it('[enforced] denies access one second after expiry and at the exact expiry instant', () => {
     expect(
       isEnrollmentActive(
         {
@@ -78,14 +138,19 @@ describe('B-2 isEnrollmentActive', () => {
           expires_at: new Date(NOW.getTime() - 1000),
         },
         NOW,
+        ENFORCED,
       ),
     ).toBe(false);
     expect(
-      isEnrollmentActive({ payment_status: 'completed', expires_at: NOW }, NOW),
+      isEnrollmentActive(
+        { payment_status: 'completed', expires_at: NOW },
+        NOW,
+        ENFORCED,
+      ),
     ).toBe(false);
   });
 
-  it('grants access one second before expiry and for a future expiry', () => {
+  it('[enforced] grants access one second before expiry and for a future expiry', () => {
     expect(
       isEnrollmentActive(
         {
@@ -93,49 +158,68 @@ describe('B-2 isEnrollmentActive', () => {
           expires_at: new Date(NOW.getTime() + 1000),
         },
         NOW,
+        ENFORCED,
       ),
     ).toBe(true);
     expect(
-      isEnrollmentActive({ payment_status: 'paid', expires_at: FUTURE }, NOW),
+      isEnrollmentActive(
+        { payment_status: 'paid', expires_at: FUTURE },
+        NOW,
+        ENFORCED,
+      ),
     ).toBe(true);
   });
 
-  it('accepts ISO strings for expires_at and rejects an unparseable one', () => {
+  it('[enforced] accepts ISO strings for expires_at and rejects an unparseable one', () => {
     expect(
       isEnrollmentActive(
         { payment_status: 'completed', expires_at: FUTURE.toISOString() },
         NOW,
+        ENFORCED,
       ),
     ).toBe(true);
     expect(
       isEnrollmentActive(
         { payment_status: 'completed', expires_at: PAST.toISOString() },
         NOW,
+        ENFORCED,
       ),
     ).toBe(false);
     expect(
       isEnrollmentActive(
         { payment_status: 'completed', expires_at: 'not-a-date' },
         NOW,
+        ENFORCED,
       ),
     ).toBe(false);
   });
 
-  // 6. null expiry
-  it('grants access when expires_at is null', () => {
+  it('grants access when expires_at is null (enforced or not)', () => {
     expect(
       isEnrollmentActive({ payment_status: 'free', expires_at: null }, NOW),
     ).toBe(true);
+    expect(
+      isEnrollmentActive(
+        { payment_status: 'free', expires_at: null },
+        NOW,
+        ENFORCED,
+      ),
+    ).toBe(true);
   });
 
-  it('a valid status never rescues an expired enrollment, and a future expiry never rescues a bad status', () => {
+  it('[enforced] a valid status never rescues an expired enrollment, and a future expiry never rescues a bad status', () => {
     expect(
-      isEnrollmentActive({ payment_status: 'PAID', expires_at: PAST }, NOW),
+      isEnrollmentActive(
+        { payment_status: 'PAID', expires_at: PAST },
+        NOW,
+        ENFORCED,
+      ),
     ).toBe(false);
     expect(
       isEnrollmentActive(
         { payment_status: 'refunded', expires_at: FUTURE },
         NOW,
+        ENFORCED,
       ),
     ).toBe(false);
   });
@@ -183,8 +267,9 @@ describe('B-2 activeEnrollmentWhere (query filter sent to Prisma)', () => {
     ).not.toContain('notIn');
   });
 
-  it('requires expires_at to be null or after now', () => {
-    const and = where.AND as Prisma.enrollmentsWhereInput[];
+  it('[enforced] requires expires_at to be null or after now', () => {
+    const enforced = activeEnrollmentWhere('user-1', 7n, NOW, ENFORCED);
+    const and = enforced.AND as Prisma.enrollmentsWhereInput[];
     expect(and[1]).toEqual({
       OR: [{ expires_at: null }, { expires_at: { gt: NOW } }],
     });

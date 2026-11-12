@@ -125,11 +125,11 @@ describe('B-2 EnrollmentsService', () => {
       await expect(service.findMyEnrollment('user-1', 1n)).resolves.toBeNull();
     });
 
-    it('returns null for an expired enrollment and the row for a future expiry', async () => {
+    it('expiry not enforced (2026-11-12): returns the row for an expired AND a future expiry', async () => {
       const expired = await make([row('completed', past())]);
       await expect(
         expired.service.findMyEnrollment('user-1', 1n),
-      ).resolves.toBeNull();
+      ).resolves.not.toBeNull();
       const active = await make([row('completed', future())]);
       await expect(
         active.service.findMyEnrollment('user-1', 1n),
@@ -141,7 +141,7 @@ describe('B-2 EnrollmentsService', () => {
       await expect(service.findMyEnrollment('user-1', 1n)).resolves.toBeNull();
     });
 
-    it('passes the allow-list + expiry filter to Prisma', async () => {
+    it('passes the payment_status allow-list (and no expiry condition) to Prisma', async () => {
       const { service, prisma } = await make([row('completed')]);
       await service.findMyEnrollment('user-1', 1n);
       const where = prisma.enrollments.findFirst.mock.calls[0][0].where;
@@ -149,31 +149,29 @@ describe('B-2 EnrollmentsService', () => {
       expect(where.user_id).toBe(expected.user_id);
       expect(where.course_id).toBe(expected.course_id);
       expect((where.AND as any[])[0]).toEqual((expected.AND as any[])[0]);
-      expect((where.AND as any[])[1].OR[0]).toEqual({ expires_at: null });
-      expect((where.AND as any[])[1].OR[1].expires_at.gt).toBeInstanceOf(Date);
+      expect(where.AND as any[]).toHaveLength(1);
+      expect(
+        JSON.stringify(where, (_k, v: unknown) =>
+          typeof v === 'bigint' ? v.toString() : v,
+        ),
+      ).not.toContain('expires_at');
     });
   });
 
   describe('createPaidEnrollment (renewal / re-purchase)', () => {
     // 10.
-    it('reactivates an EXPIRED completed enrollment with a fresh (null) expiry', async () => {
-      const { service, prisma } = await make([row('completed', past())]);
+    it('expiry not enforced: an EXPIRED completed enrollment is still active and is left unchanged', async () => {
+      const existing = row('completed', past());
+      const { service, prisma } = await make([existing]);
       const result = await service.createPaidEnrollment(
         'user-1',
         1n,
         'order_new',
         prisma,
       );
-      expect(prisma.enrollments.update).toHaveBeenCalledWith({
-        where: { user_id_course_id: { user_id: 'user-1', course_id: 1n } },
-        data: {
-          payment_status: 'completed',
-          razorpay_order_id: 'order_new',
-          expires_at: null,
-        },
-      });
-      expect(result.expires_at).toBeNull();
+      expect(prisma.enrollments.update).not.toHaveBeenCalled();
       expect(prisma.enrollments.create).not.toHaveBeenCalled();
+      expect(result).toMatchObject(existing);
     });
 
     // 11.
@@ -219,15 +217,27 @@ describe('B-2 EnrollmentsService', () => {
   describe('enrollInFreeCourse (renewal)', () => {
     const FREE = { id: 1n, is_free: true };
 
-    it('renews an expired free enrollment with a fresh (null) expiry', async () => {
+    it('expiry not enforced: an expired completed free enrollment still has access → 409 already enrolled', async () => {
       const { service, prisma } = await make([row('completed', past())], FREE);
-      await service.enrollInFreeCourse('user-1', 1n);
-      expect(prisma.enrollments.update.mock.calls[0][0].data).toEqual({
-        payment_status: 'completed',
-        expires_at: null,
-      });
+      await expect(
+        service.enrollInFreeCourse('user-1', 1n),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.enrollments.update).not.toHaveBeenCalled();
       expect(prisma.enrollments.create).not.toHaveBeenCalled();
     });
+
+    it.each(['pending', 'failed', 'refunded'])(
+      'renews an inactive (%p) free enrollment with a fresh (null) expiry',
+      async (status) => {
+        const { service, prisma } = await make([row(status)], FREE);
+        await service.enrollInFreeCourse('user-1', 1n);
+        expect(prisma.enrollments.update.mock.calls[0][0].data).toEqual({
+          payment_status: 'completed',
+          expires_at: null,
+        });
+        expect(prisma.enrollments.create).not.toHaveBeenCalled();
+      },
+    );
 
     it('still returns 409 for an active enrollment', async () => {
       const { service, prisma } = await make(
@@ -281,7 +291,7 @@ describe('B-2 lesson progress authorization', () => {
     ['refunded', null],
     ['processing', null],
     ['', null],
-    ['completed', 'expired'],
+    ['refunded', 'expired'],
   ])(
     'GET course progress: 403 for payment_status %p (%p)',
     async (status, exp) => {
@@ -292,14 +302,23 @@ describe('B-2 lesson progress authorization', () => {
     },
   );
 
-  it('POST progress: 403 for a refunded and for an expired enrollment', async () => {
-    for (const r of [row('refunded'), row('completed', past())]) {
-      const { service, prisma } = await make([r]);
-      await expect(
-        service.create('user-1', { course_id: 1, lesson_id: 11 } as any),
-      ).rejects.toBeInstanceOf(ForbiddenException);
-      expect(prisma.lessons.findUnique).not.toHaveBeenCalled();
-    }
+  it('POST progress: 403 for a refunded enrollment', async () => {
+    const { service, prisma } = await make([row('refunded')]);
+    await expect(
+      service.create('user-1', { course_id: 1, lesson_id: 11 } as any),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(prisma.lessons.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('expiry not enforced: an EXPIRED completed enrollment passes the progress gate (GET and POST)', async () => {
+    const get = await make([row('completed', past())]);
+    await expect(get.service.findMyCourseProgress('user-1', 1n)).rejects.toBe(
+      PASSED_GATE,
+    );
+    const post = await make([row('completed', past())]);
+    await expect(
+      post.service.create('user-1', { course_id: 1, lesson_id: 11 } as any),
+    ).rejects.toBe(PASSED_GATE);
   });
 
   it('403 when there is no enrollment row', async () => {
@@ -354,7 +373,7 @@ describe('B-2 certificate authorization', () => {
     ['refunded', null],
     ['pending', null],
     ['failed', null],
-    ['completed', 'expired'],
+    ['refunded', 'expired'],
   ])(
     'POST /certificates/me: 403 for %p (%p) even with every lesson completed',
     async (status, exp) => {
@@ -370,6 +389,14 @@ describe('B-2 certificate authorization', () => {
 
   it('issues the certificate for an active enrollment with every lesson completed', async () => {
     const { service, prisma } = await make([row('completed', future())]);
+    await expect(
+      service.createForStudent('user-1', { course_id: 1 } as any),
+    ).resolves.toMatchObject({ user_id: 'user-1', course_id: 1n });
+    expect(prisma.certificates.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('expiry not enforced: issues the certificate for an EXPIRED completed enrollment', async () => {
+    const { service, prisma } = await make([row('completed', past())]);
     await expect(
       service.createForStudent('user-1', { course_id: 1 } as any),
     ).resolves.toMatchObject({ user_id: 'user-1', course_id: 1n });
@@ -436,17 +463,17 @@ describe('B-2 course re-purchase guard (createRazorpayOrder)', () => {
       course_id: '5',
     });
 
-  it('allows re-purchase when the enrollment has EXPIRED', async () => {
+  it('expiry not enforced: an EXPIRED completed enrollment still has access, so re-purchase is blocked', async () => {
     const { service, ordersCreate } = await make(
       row('completed', past(), 'user-1', 5n),
       {
         access_granted: true,
       },
     );
-    await expect(buy(service)).resolves.toMatchObject({
-      razorpay_order_id: 'order_x',
-    });
-    expect(ordersCreate).toHaveBeenCalledTimes(1);
+    await expect(buy(service)).rejects.toThrow(
+      'You already have access to this course',
+    );
+    expect(ordersCreate).not.toHaveBeenCalled();
   });
 
   it('allows purchase when the enrollment is refunded or pending', async () => {

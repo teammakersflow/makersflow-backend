@@ -27,9 +27,10 @@ export class LessonProgressService {
   // SECURITY HELPERS
   // =========================
 
-  // B-2 (2026-11-11): was "any enrollment row exists", so pending, failed,
-  // refunded and expired enrollments could record progress. Now uses the
-  // shared entitlement rule (enrollments/enrollment-access.ts).
+  // B-2 (2026-11-11): was "any enrollment row exists", so pending, failed and
+  // refunded enrollments could record progress. Now uses the shared
+  // entitlement rule (enrollments/enrollment-access.ts; expiry not enforced
+  // for now).
   private async verifyEnrollment(
     userId: string,
     courseId: bigint,

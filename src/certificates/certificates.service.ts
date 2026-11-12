@@ -83,7 +83,8 @@ export class CertificatesService {
 
     // Verify that the student currently has access to the course.
     // B-2 (2026-11-11): was "any enrollment row exists" (pending, failed,
-    // refunded and expired rows passed). Now the shared entitlement rule.
+    // refunded rows passed). Now the shared entitlement rule (expiry not
+    // enforced for now; see ENROLLMENT_EXPIRY_ENFORCED).
     const now = new Date();
     const enrollment =
       await this.prisma.enrollments.findFirst({

@@ -132,10 +132,12 @@ export class PaymentsService {
       });
 
       // B-2 (2026-11-11): block only when the user really has access now.
-      // An expired, refunded or otherwise inactive enrollment may be
-      // re-purchased; fulfilment (createPaidEnrollment) then reactivates it
-      // with a fresh expiry. With no enrollment row at all, an access-granted
-      // course_purchases row still blocks, as before.
+      // A refunded, pending or otherwise inactive enrollment may be
+      // re-purchased; fulfilment (createPaidEnrollment) then reactivates it.
+      // Expiry is not enforced for now (ENROLLMENT_EXPIRY_ENFORCED), so an
+      // expired 'completed' enrollment still counts as access. With no
+      // enrollment row at all, an access-granted course_purchases row still
+      // blocks, as before.
       const hasActiveEnrollment = isEnrollmentActive(existingEnrollment);
       if (
         hasActiveEnrollment ||

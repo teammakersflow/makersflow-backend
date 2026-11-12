@@ -170,8 +170,11 @@ const as = (sub: string) =>
     },
   )}`;
 
-const DENIED = ['u-expired', 'u-processing', 'u-refunded', 'u-none'];
-const ALLOWED = ['u-ok', 'u-upper'];
+// Owner decision 2026-11-12: expires_at is not enforced yet, so an expired
+// 'completed' enrollment (u-expired) keeps access on every content route. The
+// payment_status allow-list still denies processing / refunded / no row.
+const DENIED = ['u-processing', 'u-refunded', 'u-none'];
+const ALLOWED = ['u-ok', 'u-upper', 'u-expired'];
 
 describe('B-2 entitlement on content routes (HTTP)', () => {
   let app: INestApplication;
