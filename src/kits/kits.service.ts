@@ -7,7 +7,7 @@ const KIT_INCLUDE = {
   kit_items: {
     include: {
       products: {
-        select: { id: true, title: true, slug: true, price: true, thumbnail_url: true, images: true, in_stock: true, stock: true, status: true },
+        select: { id: true, title: true, slug: true, price: true, thumbnail_url: true, images: true, in_stock: true, stock: true, stock_quantity: true, status: true },
       },
     },
   },
@@ -34,13 +34,29 @@ export class KitsService {
     return items.map((i, n) => ({ kit_id: kitId, product_id: ids[n], quantity: i.quantity }));
   }
 
+  /** Re-sign product images so admin views never show expired S3 links. */
+  private async signKit(kit: any) {
+    if (!kit?.kit_items) return kit;
+    kit.kit_items = await Promise.all(
+      kit.kit_items.map(async (ki: any) => ({
+        ...ki,
+        products: ki.products && {
+          ...ki.products,
+          thumbnail_url: await this.storage.createSignedImageUrl(
+            ki.products.thumbnail_url ?? ki.products.images?.[0] ?? null,
+          ),
+        },
+      })),
+    );
+    return kit;
+  }
   async create(dto: CreateKitDto) {
     const kit = await this.prisma.$transaction(async (tx) => {
       const created = await tx.kits.create({ data: { name: dto.name, description: dto.description } });
       await tx.kit_items.createMany({ data: await this.buildItems(created.id, dto.items) });
       return tx.kits.findUnique({ where: { id: created.id }, include: KIT_INCLUDE });
     });
-    return serialize(kit);
+    return serialize(await this.signKit(kit));
   }
 
   async findAll() {
@@ -48,7 +64,7 @@ export class KitsService {
       include: { ...KIT_INCLUDE, courses: { select: { id: true, title: true } } },
       orderBy: { created_at: 'desc' },
     });
-    return serialize(kits);
+    return serialize(await Promise.all(kits.map((k) => this.signKit(k))));
   }
 
   async findOne(id: string) {
@@ -57,7 +73,7 @@ export class KitsService {
       include: { ...KIT_INCLUDE, courses: { select: { id: true, title: true } } },
     });
     if (!kit) throw new NotFoundException('Kit not found');
-    return serialize(kit);
+    return serialize(await this.signKit(kit));
   }
 
   async update(id: string, dto: UpdateKitDto) {
@@ -74,7 +90,7 @@ export class KitsService {
       }
       return tx.kits.findUnique({ where: { id }, include: KIT_INCLUDE });
     });
-    return serialize(kit);
+    return serialize(await this.signKit(kit));
   }
 
   /** Refused once any user has claimed this kit; set status 'inactive' or detach it instead. */
@@ -116,7 +132,9 @@ export class KitsService {
       quantity: ki.quantity,
       price: ki.products.price,
       image: await this.storage.createSignedImageUrl(ki.products.thumbnail_url ?? ki.products.images[0] ?? null),
-      available: ki.products.in_stock !== false && ki.products.stock >= ki.quantity,
+      available:
+        ki.products.in_stock !== false &&
+        (ki.products.stock_quantity < 0 || ki.products.stock_quantity >= ki.quantity),
     })));
 
     return serialize({
