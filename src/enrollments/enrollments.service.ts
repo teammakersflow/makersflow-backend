@@ -9,6 +9,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
+import {
+  activeEnrollmentWhere,
+  isEnrollmentActive,
+  type EnrollmentAccessFields,
+} from './enrollment-access';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 
 @Injectable()
@@ -139,18 +144,19 @@ export class EnrollmentsService {
     }).then((rows) => Promise.all(rows.map((r) => this.signCourse(r))));
   }
 
+  /**
+   * The user's enrollment in `courseId` ONLY if it currently grants access
+   * (B-2: allow-listed payment_status; expiry is not enforced for now, see
+   * ENROLLMENT_EXPIRY_ENFORCED in enrollment-access.ts).
+   * Returns null otherwise. Every content route gates on this.
+   */
   async findMyEnrollment(
   userId: string,
   courseId: bigint,
 ) {
+  const now = new Date();
   return this.prisma.enrollments.findFirst({
-    where: {
-      user_id: userId,
-      course_id: courseId,
-      payment_status: {
-        notIn: ['pending', 'failed', 'cancelled', 'refunded'],
-      },
-    },
+    where: activeEnrollmentWhere(userId, courseId, now),
     include: {
       courses: {
         select: {
@@ -165,7 +171,10 @@ export class EnrollmentsService {
         },
       },
     },
-  }).then((r) => (r ? this.signCourse(r) : r));
+  }).then((r) =>
+    // Re-check in code so the rule holds even if the query filter changes.
+    r && isEnrollmentActive(r, now) ? this.signCourse(r) : null,
+  );
 }
   async enrollInFreeCourse(
     userId: string,
@@ -197,10 +206,42 @@ export class EnrollmentsService {
         },
       });
 
+    const courseSelect = {
+      id: true,
+      title: true,
+      description: true,
+      thumbnail_url: true,
+      price: true,
+      is_free: true,
+    };
+
     if (existingEnrollment) {
-      throw new ConflictException(
-        'Student is already enrolled in this course',
-      );
+      if (isEnrollmentActive(existingEnrollment)) {
+        throw new ConflictException(
+          'Student is already enrolled in this course',
+        );
+      }
+
+      // B-2: an inactive enrollment in a free course (pending, failed, ...; or
+      // expired once expiry is enforced) is renewed with a fresh (no) expiry
+      // instead of blocking the student forever.
+      return this.prisma.enrollments.update({
+        where: {
+          user_id_course_id: {
+            user_id: userId,
+            course_id: courseId,
+          },
+        },
+        data: {
+          payment_status: 'completed',
+          expires_at: null,
+        },
+        include: {
+          courses: {
+            select: courseSelect,
+          },
+        },
+      });
     }
 
     return this.prisma.enrollments.create({
@@ -211,14 +252,7 @@ export class EnrollmentsService {
       },
       include: {
         courses: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            thumbnail_url: true,
-            price: true,
-            is_free: true,
-          },
+          select: courseSelect,
         },
       },
     });
@@ -240,7 +274,15 @@ export class EnrollmentsService {
     });
 
     if (existingEnrollment) {
-      if (existingEnrollment.payment_status !== 'completed') {
+      // B-2: re-purchase or renewal. Anything other than a currently active
+      // 'completed' enrollment (pending, refunded, ...; expired too once
+      // expiry is enforced) is reactivated with a fresh expiry. NestJS has no
+      // course access period, so a fresh expiry is "none" (null), the same as
+      // a first purchase.
+      if (
+        existingEnrollment.payment_status !== 'completed' ||
+        !isEnrollmentActive(existingEnrollment as EnrollmentAccessFields)
+      ) {
         return tx.enrollments.update({
           where: {
             user_id_course_id: {
@@ -251,6 +293,7 @@ export class EnrollmentsService {
           data: {
             payment_status: 'completed',
             razorpay_order_id: razorpayOrderId,
+            expires_at: null,
           },
         });
       }

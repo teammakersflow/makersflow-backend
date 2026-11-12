@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 
 import type { Request } from 'express';
@@ -20,6 +21,8 @@ import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -63,6 +66,18 @@ export class NotificationsController {
       user.id,
       id,
     );
+  }
+
+  // 2026-11-11 (integration): the app's "delete notification" called the
+  // admin-only DELETE /notifications/:id and always got 403. Students delete
+  // only their own rows here; another user's id behaves like a missing one.
+  @Delete('my/:id')
+  @UseGuards(JwtAuthGuard)
+  deleteMine(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    return this.notificationsService.deleteMine(user.id, id);
   }
 
   // ─────────────────────────────────────────────

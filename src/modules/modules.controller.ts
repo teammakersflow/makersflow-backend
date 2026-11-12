@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -30,14 +31,21 @@ export class ModulesController {
     return this.modulesService.create(createModuleDto);
   }
 
+  // B-1 (2026-11-11): module rows are curriculum metadata (title, order,
+  // description, duration) and stay public so course pages can be browsed.
+  // The service now uses an explicit field list so a future sensitive column
+  // is never exposed by accident.
   @Get()
   findAll() {
-    return this.modulesService.findAll();
+    return this.modulesService.findAllPublic();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.modulesService.findOne(BigInt(id));
+    if (!/^\d+$/.test(id)) {
+      throw new BadRequestException('Invalid module ID');
+    }
+    return this.modulesService.findOnePublic(BigInt(id));
   }
 
   @Patch(':id')
