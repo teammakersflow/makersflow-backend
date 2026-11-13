@@ -21,10 +21,55 @@ const URL = process.env.CONCURRENCY_TEST_DATABASE_URL;
 const HOLD_MS = 300;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Barrier shared by both clients: when armed for N parties, each
+ * transaction waits right after its lesson_progress write until all N writes
+ * have happened. This makes "both writes before either read" deterministic
+ * (a fixed sleep alone is not: if one request starts its transaction more
+ * than HOLD_MS later, e.g. on a cold connection, there is no race).
+ * Only for writes to DIFFERENT rows; writes to the same row serialise on the
+ * row lock and must not wait for each other.
+ */
+const barrier = {
+  parties: 0,
+  arrived: 0,
+  waiters: [] as Array<() => void>,
+  arm(n: number) {
+    this.parties = n;
+    this.arrived = 0;
+    this.waiters = [];
+  },
+  disarm() {
+    this.parties = 0;
+    this.waiters.splice(0).forEach((w) => w());
+  },
+  async arrive() {
+    if (this.parties === 0) return;
+    this.arrived += 1;
+    if (this.arrived >= this.parties) {
+      this.waiters.splice(0).forEach((w) => w());
+      return;
+    }
+    // Wait for the other party; fail loudly (and clean up the timer) if it
+    // never writes, instead of hanging or leaving a pending timer behind.
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error('barrier timeout: the other transaction never wrote')),
+        10_000,
+      );
+      this.waiters.push(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+  },
+};
+
 function slowClient() {
   const base = new PrismaClient({ datasourceUrl: URL });
   const hold = async ({ args, query }: any) => {
     const result = await query(args);
+    await barrier.arrive();
     await sleep(HOLD_MS);
     return result;
   };
@@ -83,7 +128,11 @@ const noStreaks = { recordActivity: async () => undefined } as any;
     await admin.$executeRawUnsafe(`
       CREATE TRIGGER trg_audit_completed_at AFTER UPDATE ON enrollments
       FOR EACH ROW EXECUTE FUNCTION audit_completed_at()`);
+    // Open both pools up front so neither request starts on a cold connection.
+    await Promise.all([a.base.$connect(), b.base.$connect()]);
   });
+
+  afterEach(() => barrier.disarm());
 
   afterAll(async () => {
     await Promise.all([admin.$disconnect(), a.base.$disconnect(), b.base.$disconnect()]);
@@ -127,6 +176,7 @@ const noStreaks = { recordActivity: async () => undefined } as any;
     const s = await setup();
     const svcA = new LessonProgressService(withoutLock(a.client) as any, noStreaks);
     const svcB = new LessonProgressService(withoutLock(b.client) as any, noStreaks);
+    barrier.arm(2);
     await Promise.all([
       svcA.update(s.userId, s.p1, { is_completed: true } as any),
       svcB.update(s.userId, s.p2, { is_completed: true } as any),
@@ -141,6 +191,7 @@ const noStreaks = { recordActivity: async () => undefined } as any;
     const svcA = new LessonProgressService(a.client as any, noStreaks);
     const svcB = new LessonProgressService(b.client as any, noStreaks);
     const started = Date.now();
+    barrier.arm(2);
     await Promise.all([
       svcA.update(s.userId, s.p1, { is_completed: true } as any),
       svcB.update(s.userId, s.p2, { is_completed: true } as any),
@@ -159,6 +210,7 @@ const noStreaks = { recordActivity: async () => undefined } as any;
     const s = await setup();
     const svcA = new LessonProgressService(a.client as any, noStreaks);
     const svcB = new LessonProgressService(b.client as any, noStreaks);
+    barrier.arm(2);
     await Promise.all([
       svcA.update(s.userId, s.p1, { is_completed: true } as any),
       svcB.update(s.userId, s.p2, { is_completed: true } as any),
@@ -180,6 +232,7 @@ const noStreaks = { recordActivity: async () => undefined } as any;
     // Two concurrent (duplicate) completions of the new lesson: both see it as
     // newly completed and both try to stamp.
     await sleep(1100);
+    barrier.disarm(); // same row: the second write waits on the row lock, no barrier
     await Promise.all([
       svcA.update(s.userId, p3, { is_completed: true } as any),
       svcB.update(s.userId, p3, { is_completed: true } as any),
