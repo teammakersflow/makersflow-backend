@@ -253,9 +253,92 @@ export class LessonProgressService {
           userId,
           tx,
         );
+
+        // A new row completed a lesson that was not completed before: if the
+        // course is now complete, record the first-completion date.
+        await this.stampFirstCompletion(tx, userId, courseId);
       }
 
       return progress;
+    });
+  }
+
+  // =========================
+  // FIRST-COMPLETION DATE
+  // =========================
+
+  /**
+   * Records enrollments.completed_at the FIRST time the learner completes the
+   * course. Called only when this write turned a not-completed lesson into a
+   * completed one (so the course was not complete before it).
+   *
+   * - Uses the same rule as GET /lesson-progress/my/course/:courseId and the
+   *   certificate check (course-completion.ts).
+   * - Never overwrites: the update is conditional on completed_at IS NULL, so
+   *   rewatches, later progress and re-completing newly added lessons keep the
+   *   original date.
+   * - completed_at is only a date. Current completion status is always
+   *   computed live from the current lessons.
+   * - If a certificate already exists (course completed before this column was
+   *   stamped), its issued_at is the first-completion date; otherwise now.
+   */
+  private async stampFirstCompletion(
+    tx: any,
+    userId: string,
+    courseId: bigint,
+  ) {
+    // Concurrency: two requests can complete the last two lessons at the same
+    // time. Without a lock each one reads progress before the other commits,
+    // neither sees the course complete, and the first-completion date is never
+    // recorded. Locking the enrollment row serialises completing writes for
+    // this learner+course: whoever gets the lock second waits for the first to
+    // COMMIT, and its reads below (new statements under READ COMMITTED) then
+    // see the other lesson. Same transaction as the progress write.
+    //
+    // Deadlocks: every completing transaction locks in the same order (its own
+    // lesson_progress row -> streak row -> this enrollment row); no other
+    // transaction locks enrollments and then lesson_progress/streaks.
+    await tx.$queryRaw`
+      SELECT id FROM enrollments
+      WHERE user_id = ${userId}::uuid AND course_id = ${courseId}
+      FOR UPDATE
+    `;
+
+    // Re-read the latest current lessons and progress after the lock.
+    const [lessons, progress] = await Promise.all([
+      tx.lessons.findMany({
+        where: { modules: { course_id: courseId } },
+        select: { id: true },
+      }),
+      tx.lesson_progress.findMany({
+        where: { user_id: userId, course_id: courseId },
+        select: { lesson_id: true, is_completed: true },
+      }),
+    ]);
+
+    if (!computeCourseCompletion(lessons, progress).is_completed) {
+      return;
+    }
+
+    const certificate = await tx.certificates.findUnique({
+      where: {
+        user_id_course_id: {
+          user_id: userId,
+          course_id: courseId,
+        },
+      },
+      select: { issued_at: true },
+    });
+
+    await tx.enrollments.updateMany({
+      where: {
+        user_id: userId,
+        course_id: courseId,
+        completed_at: null,
+      },
+      data: {
+        completed_at: certificate?.issued_at ?? new Date(),
+      },
     });
   }
 
@@ -388,6 +471,10 @@ export class LessonProgressService {
           userId,
           tx,
         );
+
+        // Only a real incomplete -> completed change can complete the course
+        // for the first time; rewatches and repeated completions never do.
+        await this.stampFirstCompletion(tx, userId, existing.course_id);
       }
 
       return updated;
