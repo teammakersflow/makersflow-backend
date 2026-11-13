@@ -350,9 +350,11 @@ describe('B-2 certificate authorization', () => {
       // Every lesson completed: only the entitlement can stop issuance.
       lessons: { findMany: jest.fn(async () => [{ id: 11n }, { id: 12n }]) },
       lesson_progress: {
+        // The certificate query selects lesson_id + is_completed (only rows
+        // for lessons currently in the course count).
         findMany: jest.fn(async () => [
-          { is_completed: true },
-          { is_completed: true },
+          { lesson_id: 11n, is_completed: true },
+          { lesson_id: 12n, is_completed: true },
         ]),
       },
       certificates: {

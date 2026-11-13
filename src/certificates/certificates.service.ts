@@ -12,6 +12,7 @@ import {
   isEnrollmentActive,
 } from '../enrollments/enrollment-access';
 
+import { computeCourseCompletion } from '../lesson-progress/course-completion';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { CreateStudentCertificateDto } from './dto/create-student-certificate.dto';
 import { UpdateCertificateDto } from './dto/update-certificate.dto';
@@ -118,20 +119,15 @@ export class CertificatesService {
           course_id: courseId,
         },
         select: {
+          lesson_id: true,
           is_completed: true,
         },
       });
 
-    const totalLessons = lessons.length;
-
-    const completedLessons =
-      progress.filter(
-        (item) => item.is_completed,
-      ).length;
-
-    const isCourseCompleted =
-      totalLessons > 0 &&
-      completedLessons === totalLessons;
+    // Same rule as GET /lesson-progress/my/course/:courseId: only lessons
+    // that currently belong to the course count (course-completion.ts).
+    const { is_completed: isCourseCompleted } =
+      computeCourseCompletion(lessons, progress);
 
     if (!isCourseCompleted) {
       throw new ForbiddenException(
