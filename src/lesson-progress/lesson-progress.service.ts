@@ -13,6 +13,7 @@ import {
   isEnrollmentActive,
 } from '../enrollments/enrollment-access';
 
+import { computeCourseCompletion } from './course-completion';
 import { CreateLessonProgressDto } from './dto/create-lesson-progress.dto';
 import { UpdateLessonProgressDto } from './dto/update-lesson-progress.dto';
 
@@ -148,28 +149,19 @@ export class LessonProgressService {
       ]),
     );
 
-    const completedLessons =
-      progress.filter(
-        (item) => item.is_completed,
-      ).length;
-
-    const totalLessons = lessons.length;
-
-    const completionPercentage =
-      totalLessons === 0
-        ? 0
-        : Math.round(
-            (completedLessons / totalLessons) * 100,
-          );
+    // Only lessons that currently belong to the course count; rows left
+    // behind by deleted or moved lessons are ignored (course-completion.ts).
+    const completion = computeCourseCompletion(
+      lessons,
+      progress,
+    );
 
     return {
       course_id: courseId.toString(),
-      total_lessons: totalLessons,
-      completed_lessons: completedLessons,
-      completion_percentage: completionPercentage,
-      is_completed:
-        totalLessons > 0 &&
-        completedLessons === totalLessons,
+      total_lessons: completion.total_lessons,
+      completed_lessons: completion.completed_lessons,
+      completion_percentage: completion.completion_percentage,
+      is_completed: completion.is_completed,
 
       lessons: lessons.map((lesson) => ({
         lesson_id: lesson.id.toString(),
