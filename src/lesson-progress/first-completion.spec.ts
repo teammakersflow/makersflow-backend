@@ -77,7 +77,26 @@ function fakeDb() {
       }),
     },
   };
-  prisma.$transaction = jest.fn(async (fn: any) => fn(prisma));
+  // Records the order of operations inside a transaction (lock vs reads).
+  const events: string[] = [];
+  let inTransaction = false;
+  prisma.$queryRaw = jest.fn(async (strings: TemplateStringsArray) => {
+    events.push(`${inTransaction ? 'tx:' : ''}${strings.join('?').includes('FOR UPDATE') ? 'lock-enrollment' : 'raw'}`);
+    return [{ id: db.enrollment.id }];
+  });
+  const readProgress = prisma.lesson_progress.findMany;
+  prisma.lesson_progress.findMany = jest.fn(async (args: any) => {
+    events.push(`${inTransaction ? 'tx:' : ''}read-progress`);
+    return readProgress(args);
+  });
+  prisma.$transaction = jest.fn(async (fn: any) => {
+    inTransaction = true;
+    try {
+      return await fn(prisma);
+    } finally {
+      inTransaction = false;
+    }
+  });
   const service = new LessonProgressService(prisma, { recordActivity: jest.fn() } as any);
   const complete = async (lessonId: bigint) => {
     const row = db.progress.find((p) => p.lesson_id === lessonId);
@@ -85,7 +104,7 @@ function fakeDb() {
     return service.create('u1', { course_id: 7, lesson_id: Number(lessonId), is_completed: true, watch_percentage: 100 } as any);
   };
   const status = () => service.findMyCourseProgress('u1', 7n);
-  return { db, prisma, service, complete, status };
+  return { db, prisma, service, complete, status, events };
 }
 
 describe('first-completion date (enrollments.completed_at)', () => {
@@ -166,6 +185,27 @@ describe('first-completion date (enrollments.completed_at)', () => {
     await service.update('u1', 50n, { current_time_secs: 10 } as any);
     expect(prisma.enrollments.updateMany).not.toHaveBeenCalled();
     expect(db.enrollment.completed_at).toBeNull();
+  });
+
+  it('locks the enrollment row inside the transaction BEFORE re-reading progress', async () => {
+    const { db, prisma, complete, events } = fakeDb();
+    db.lessons.push({ id: 1n, course_id: 7n });
+    await complete(1n);
+    const lockAt = events.indexOf('tx:lock-enrollment');
+    expect(lockAt).toBeGreaterThanOrEqual(0);
+    expect(events.slice(lockAt + 1)).toContain('tx:read-progress');
+    expect(events.slice(lockAt + 1).every((e) => e.startsWith('tx:'))).toBe(true);
+    const sql = (prisma.$queryRaw.mock.calls[0][0] as TemplateStringsArray).join('?');
+    expect(sql).toMatch(/FROM enrollments\s+WHERE user_id = \?::uuid AND course_id = \?\s+FOR UPDATE/);
+    expect(prisma.$queryRaw.mock.calls[0].slice(1)).toEqual(['u1', 7n]);
+  });
+
+  it('no lock and no stamp for writes that do not complete a lesson', async () => {
+    const { db, prisma, service } = fakeDb();
+    db.lessons.push({ id: 1n, course_id: 7n });
+    await service.create('u1', { course_id: 7, lesson_id: 1, watch_percentage: 40 } as any);
+    expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    expect(prisma.enrollments.updateMany).not.toHaveBeenCalled();
   });
 
   it('certificate eligibility follows current lessons, not completed_at', async () => {

@@ -287,6 +287,24 @@ export class LessonProgressService {
     userId: string,
     courseId: bigint,
   ) {
+    // Concurrency: two requests can complete the last two lessons at the same
+    // time. Without a lock each one reads progress before the other commits,
+    // neither sees the course complete, and the first-completion date is never
+    // recorded. Locking the enrollment row serialises completing writes for
+    // this learner+course: whoever gets the lock second waits for the first to
+    // COMMIT, and its reads below (new statements under READ COMMITTED) then
+    // see the other lesson. Same transaction as the progress write.
+    //
+    // Deadlocks: every completing transaction locks in the same order (its own
+    // lesson_progress row -> streak row -> this enrollment row); no other
+    // transaction locks enrollments and then lesson_progress/streaks.
+    await tx.$queryRaw`
+      SELECT id FROM enrollments
+      WHERE user_id = ${userId}::uuid AND course_id = ${courseId}
+      FOR UPDATE
+    `;
+
+    // Re-read the latest current lessons and progress after the lock.
     const [lessons, progress] = await Promise.all([
       tx.lessons.findMany({
         where: { modules: { course_id: courseId } },
