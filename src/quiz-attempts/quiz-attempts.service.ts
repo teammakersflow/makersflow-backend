@@ -85,13 +85,17 @@ export class QuizAttemptsService {
       }
     }
 
-    const quiz = await this.prisma.quizzes.findFirst({
+    // Lessons whose questions were added before quizzes rows were created
+    // automatically have no quizzes row yet. Create it, like quiz-questions does.
+    let quiz = await this.prisma.quizzes.findFirst({
       where: { lesson_id: lessonId },
       orderBy: { id: 'asc' },
     });
 
     if (!quiz) {
-      throw new NotFoundException('Quiz not found for this lesson');
+      quiz = await this.prisma.quizzes.create({
+        data: { lesson_id: lessonId, title: 'Lesson Quiz', questions: [] },
+      });
     }
 
     const questions = await this.prisma.quiz_questions.findMany({
